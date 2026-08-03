@@ -5,6 +5,7 @@ description = "Backend de la plataforma de planificación académica Ruta UNSA"
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "django>=5.2.8,<5.3",
+    "django-cors-headers>=4.9.0",
     "django-environ>=0.14.0",
     "django-filter>=26.1",
     "djangorestframework>=3.17.1",
