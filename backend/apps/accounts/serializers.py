@@ -4,6 +4,11 @@ from .models import User
 
 
 class CurrentUserSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+
     class Meta:
         model = User
         fields = [

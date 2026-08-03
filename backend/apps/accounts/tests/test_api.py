@@ -41,7 +41,7 @@ class CurrentUserEndpointTests(APITestCase):
         self.assertEqual(
             response.json()['data'],
             {
-                'id': user.id,
+                'id': str(user.public_id),
                 'email': 'estudiante@unsa.edu.pe',
                 'first_name': 'Sebastian',
                 'last_name': 'Diaz',

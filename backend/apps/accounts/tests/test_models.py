@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -35,3 +37,11 @@ class UserManagerTests(TestCase):
         self.assertTrue(user.is_staff)
         self.assertTrue(user.is_superuser)
         self.assertTrue(user.is_active)
+
+    def test_create_user_generates_public_id(self) -> None:
+        user = User.objects.create_user(
+            email='public.id@unsa.edu.pe',
+            password='Prueba123!',
+        )
+
+        self.assertIsInstance(user.public_id, UUID)
