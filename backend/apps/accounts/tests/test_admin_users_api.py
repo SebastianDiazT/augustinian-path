@@ -124,3 +124,104 @@ class PlatformAdminUserListEndpointTests(APITestCase):
                 'has_previous': True,
             },
         )
+
+    def test_searches_by_email_or_name(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(f'{self.endpoint}?search=TORRES')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            [user['email'] for user in response.json()['data']['users']],
+            [
+                'estudiante.lista@unsa.edu.pe',
+            ],
+        )
+
+    def test_filters_by_role(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(f'{self.endpoint}?role=platform_admin')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            [user['email'] for user in response.json()['data']['users']],
+            [
+                'admin.lista@unsa.edu.pe',
+            ],
+        )
+
+    def test_filters_by_active_status(self) -> None:
+        self.student.is_active = False
+        self.student.save(update_fields=['is_active'])
+
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(f'{self.endpoint}?is_active=false')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            [user['email'] for user in response.json()['data']['users']],
+            [
+                'estudiante.lista@unsa.edu.pe',
+            ],
+        )
+
+    def test_combines_filters_before_pagination(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            self.endpoint
+            + '?search=ana'
+            + '&role=student'
+            + '&is_active=true'
+            + '&page_size=1'
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+
+        data = response.json()['data']
+
+        self.assertEqual(
+            [user['email'] for user in data['users']],
+            [
+                'estudiante.lista@unsa.edu.pe',
+            ],
+        )
+        self.assertEqual(
+            data['pagination'],
+            {
+                'page': 1,
+                'page_size': 1,
+                'total_items': 1,
+                'total_pages': 1,
+                'has_next': False,
+                'has_previous': False,
+            },
+        )
+
+    def test_rejects_unknown_role_filter(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(f'{self.endpoint}?role=unknown')
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'role',
+            response.json()['error']['errors'],
+        )

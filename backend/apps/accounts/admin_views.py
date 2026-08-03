@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group
 from django.db.models import Prefetch
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,8 +10,10 @@ from rest_framework.views import APIView
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 
+from .filters import PlatformAdminUserFilter
 from .models import User
 from .permissions import IsPlatformAdmin
+from .roles import Role
 from .serializers import (
     PlatformAdminAccessDataSerializer,
     PlatformAdminUserListDataSerializer,
@@ -49,6 +52,28 @@ class PlatformAdminUserListView(APIView):
         tags=['Administración'],
         parameters=[
             OpenApiParameter(
+                name='search',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Busca parcialmente por correo, nombres o apellidos.'),
+            ),
+            OpenApiParameter(
+                name='role',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                enum=[role.value for role in Role],
+                description='Filtra por rol.',
+            ),
+            OpenApiParameter(
+                name='is_active',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por estado activo.',
+            ),
+            OpenApiParameter(
                 name='page',
                 type=int,
                 location=OpenApiParameter.QUERY,
@@ -73,9 +98,19 @@ class PlatformAdminUserListView(APIView):
             )
         ).order_by('email')
 
+        user_filter = PlatformAdminUserFilter(
+            data=request.query_params,
+            queryset=users,
+        )
+
+        if not user_filter.is_valid():
+            raise ValidationError(user_filter.errors)
+
+        filtered_users = user_filter.qs
+
         paginator = StandardPageNumberPagination()
         page = paginator.paginate_queryset(
-            users,
+            filtered_users,
             request,
             view=self,
         )
