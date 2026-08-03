@@ -1,3 +1,6 @@
+from uuid import UUID
+
+from django.utils.dateparse import parse_datetime
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -5,15 +8,48 @@ from rest_framework.test import APITestCase
 class HealthEndpointTests(APITestCase):
     endpoint = '/api/v1/health/'
 
-    def test_health_endpoint_returns_service_status(self) -> None:
+    def test_health_endpoint_returns_standard_response(self) -> None:
         response = self.client.get(self.endpoint)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        body = response.json()
+
         self.assertEqual(
-            response.json(),
+            body['data'],
             {
                 'status': 'ok',
                 'service': 'ruta-unsa-backend',
-                'version': 'v1',
             },
+        )
+
+        self.assertEqual(body['meta']['api_version'], 'v1')
+        self.assertIsNotNone(parse_datetime(body['meta']['timestamp']))
+
+        request_id = body['meta']['request_id']
+
+        UUID(request_id)
+
+        self.assertEqual(
+            response.headers['X-Request-ID'],
+            request_id,
+        )
+
+    def test_health_endpoint_preserves_valid_request_id(self) -> None:
+        request_id = '70af3f98-1516-4f5d-b468-f8c61ae60b29'
+
+        response = self.client.get(
+            self.endpoint,
+            headers={
+                'X-Request-ID': request_id,
+            },
+        )
+
+        self.assertEqual(
+            response.json()['meta']['request_id'],
+            request_id,
+        )
+        self.assertEqual(
+            response.headers['X-Request-ID'],
+            request_id,
         )

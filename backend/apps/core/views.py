@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .responses import success_response
 from .serializers import HealthResponseSerializer
 
 
@@ -17,10 +18,10 @@ class HealthView(APIView):
         responses=HealthResponseSerializer,
     )
     def get(self, request: Request) -> Response:
-        return Response(
-            {
+        return success_response(
+            data={
                 'status': 'ok',
                 'service': 'ruta-unsa-backend',
-                'version': 'v1',
-            }
+            },
+            request_id=request.request_id,
         )
