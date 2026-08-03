@@ -133,6 +133,33 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ('browser',)
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'APPS': [
+            {
+                'client_id': env(
+                    'GOOGLE_OAUTH_CLIENT_ID',
+                    default='',
+                ),
+                'secret': env(
+                    'GOOGLE_OAUTH_CLIENT_SECRET',
+                    default='',
+                ),
+                'key': '',
+            },
+        ],
+        'SCOPE': [
+            'profile',
+            'email',
+        ],
+        'AUTH_PARAMS': {
+            'access_type': 'offline',
+            'prompt': 'consent',
+        },
+        'OAUTH_PKCE_ENABLED': True,
+    },
+}
+
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
