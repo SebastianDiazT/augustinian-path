@@ -53,3 +53,50 @@ class HealthEndpointTests(APITestCase):
             response.headers['X-Request-ID'],
             request_id,
         )
+
+    def test_health_endpoint_returns_standard_method_error(
+        self,
+    ) -> None:
+        response = self.client.post(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+        body = response.json()
+
+        self.assertEqual(
+            body['error']['type'],
+            'urn:ruta-unsa:problem:method-not-allowed',
+        )
+        self.assertEqual(
+            body['error']['title'],
+            'Método no permitido',
+        )
+        self.assertEqual(
+            body['error']['status'],
+            status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+        self.assertEqual(
+            body['error']['instance'],
+            self.endpoint,
+        )
+        self.assertIsInstance(
+            body['error']['detail'],
+            str,
+        )
+
+        self.assertEqual(
+            body['meta']['api_version'],
+            'v1',
+        )
+
+        request_id = body['meta']['request_id']
+
+        UUID(request_id)
+
+        self.assertEqual(
+            response.headers['X-Request-ID'],
+            request_id,
+        )

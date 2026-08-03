@@ -98,6 +98,7 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'EXCEPTION_HANDLER': ('apps.core.exceptions.api_exception_handler'),
 }
 
 SPECTACULAR_SETTINGS = {
