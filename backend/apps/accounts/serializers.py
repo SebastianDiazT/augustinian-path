@@ -13,3 +13,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             'last_name',
         ]
         read_only_fields = fields
+
+
+class CSRFDataSerializer(serializers.Serializer):
+    csrf_cookie_set = serializers.BooleanField()

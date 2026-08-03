@@ -47,3 +47,30 @@ class CurrentUserEndpointTests(APITestCase):
                 'last_name': 'Diaz',
             },
         )
+
+
+class CSRFEndpointTests(APITestCase):
+    endpoint = '/api/v1/auth/csrf/'
+
+    def test_sets_csrf_cookie(self) -> None:
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.json()['data'],
+            {
+                'csrf_cookie_set': True,
+            },
+        )
+        self.assertIn('csrftoken', response.cookies)
+
+    def test_is_available_without_authentication(self) -> None:
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
