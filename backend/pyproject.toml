@@ -5,4 +5,6 @@ description = "Backend de la plataforma de planificación académica Ruta UNSA"
 requires-python = ">=3.14,<3.15"
 dependencies = [
     "django>=5.2.8,<5.3",
+    "django-environ>=0.14.0",
+    "psycopg[binary]>=3.3,<4",
 ]
