@@ -40,3 +40,46 @@ class LogoutDataSerializer(serializers.Serializer):
 
 class PlatformAdminAccessDataSerializer(serializers.Serializer):
     authorized = serializers.BooleanField()
+
+
+class PlatformAdminUserSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    roles = serializers.SlugRelatedField(
+        source='groups',
+        many=True,
+        read_only=True,
+        slug_field='name',
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            'id',
+            'email',
+            'first_name',
+            'last_name',
+            'is_active',
+            'roles',
+        ]
+        read_only_fields = fields
+
+
+class PlatformAdminUserPaginationSerializer(
+    serializers.Serializer,
+):
+    page = serializers.IntegerField()
+    page_size = serializers.IntegerField()
+    total_items = serializers.IntegerField()
+    total_pages = serializers.IntegerField()
+    has_next = serializers.BooleanField()
+    has_previous = serializers.BooleanField()
+
+
+class PlatformAdminUserListDataSerializer(
+    serializers.Serializer,
+):
+    users = PlatformAdminUserSerializer(many=True)
+    pagination = PlatformAdminUserPaginationSerializer()
