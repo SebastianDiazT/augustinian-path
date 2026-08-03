@@ -1,11 +1,14 @@
+from decimal import Decimal
 from uuid import UUID
 
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 
 from apps.academics.models import (
     Course,
+    CurriculumCourse,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -393,4 +396,166 @@ class CourseTests(TestCase):
         self.assertEqual(
             str(course),
             ('CS 101 — Programacion (Escuela Profesional de Sistemas)'),
+        )
+
+
+class CurriculumCourseTests(TestCase):
+    def setUp(self) -> None:
+        self.faculty = Faculty.objects.create(
+            name='Facultad de Ingenieria',
+        )
+        self.school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Sistemas',
+        )
+        self.plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2025',
+            name='Plan de Estudios 2025',
+        )
+        self.course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Programacion',
+        )
+
+    def test_adds_course_to_curriculum_plan(self) -> None:
+        curriculum_course = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+
+        self.assertIsInstance(
+            curriculum_course.public_id,
+            UUID,
+        )
+        self.assertEqual(
+            curriculum_course.credits,
+            Decimal('4.00'),
+        )
+        self.assertIn(
+            curriculum_course,
+            self.plan.curriculum_courses.all(),
+        )
+        self.assertIn(
+            curriculum_course,
+            self.course.curriculum_entries.all(),
+        )
+
+    def test_rejects_course_from_different_school(
+        self,
+    ) -> None:
+        other_school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Industrial',
+        )
+        other_course = Course.objects.create(
+            professional_school=other_school,
+            code='IN 101',
+            name='Introduccion a Industrial',
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            CurriculumCourse.objects.create(
+                curriculum_plan=self.plan,
+                course=other_course,
+                cycle=1,
+                credits=Decimal('3.00'),
+            )
+
+        self.assertIn(
+            'course',
+            context.exception.message_dict,
+        )
+
+    def test_rejects_duplicate_course_in_same_plan(
+        self,
+    ) -> None:
+        CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+
+        with self.assertRaises(ValidationError):
+            CurriculumCourse.objects.create(
+                curriculum_plan=self.plan,
+                course=self.course,
+                cycle=2,
+                credits=Decimal('4.00'),
+            )
+
+    def test_allows_course_in_different_plans(
+        self,
+    ) -> None:
+        other_plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2026',
+            name='Plan de Estudios 2026',
+        )
+
+        first_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+        second_entry = CurriculumCourse.objects.create(
+            curriculum_plan=other_plan,
+            course=self.course,
+            cycle=2,
+            credits=Decimal('3.50'),
+        )
+
+        self.assertNotEqual(
+            first_entry.public_id,
+            second_entry.public_id,
+        )
+
+    def test_rejects_cycle_zero(self) -> None:
+        with self.assertRaises(ValidationError):
+            CurriculumCourse.objects.create(
+                curriculum_plan=self.plan,
+                course=self.course,
+                cycle=0,
+                credits=Decimal('4.00'),
+            )
+
+    def test_rejects_negative_credits(self) -> None:
+        with self.assertRaises(ValidationError):
+            CurriculumCourse.objects.create(
+                curriculum_plan=self.plan,
+                course=self.course,
+                cycle=1,
+                credits=Decimal('-1.00'),
+            )
+
+    def test_protects_plan_and_course(self) -> None:
+        CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+
+        with self.assertRaises(ProtectedError):
+            self.plan.delete()
+
+        with self.assertRaises(ProtectedError):
+            self.course.delete()
+
+    def test_returns_descriptive_string(self) -> None:
+        curriculum_course = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+
+        self.assertEqual(
+            str(curriculum_course),
+            '2025: CS 101 — ciclo 1',
         )
