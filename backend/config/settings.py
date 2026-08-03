@@ -160,6 +160,8 @@ SOCIALACCOUNT_PROVIDERS = {
     },
 }
 
+ACCOUNT_ADAPTER = 'apps.accounts.adapters.GoogleOnlyAccountAdapter'
+
 SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.InstitutionalSocialAccountAdapter'
 
 REST_FRAMEWORK = {
