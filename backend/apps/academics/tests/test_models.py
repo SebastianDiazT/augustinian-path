@@ -4,7 +4,11 @@ from django.db import IntegrityError, transaction
 from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 
-from apps.academics.models import Faculty, ProfessionalSchool
+from apps.academics.models import (
+    CurriculumPlan,
+    Faculty,
+    ProfessionalSchool,
+)
 
 
 class FacultyTests(TestCase):
@@ -155,4 +159,111 @@ class ProfessionalSchoolTests(TestCase):
         self.assertEqual(
             str(school),
             ('Escuela Profesional de Sistemas (Facultad de Ingenieria)'),
+        )
+
+
+class CurriculumPlanTests(TestCase):
+    def setUp(self) -> None:
+        self.faculty = Faculty.objects.create(
+            name='Facultad de Ingenieria',
+        )
+        self.school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Sistemas',
+        )
+
+    def test_creates_plan_related_to_school(self) -> None:
+        plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2017',
+            name='Plan de Estudios 2017',
+        )
+
+        self.assertIsInstance(plan.public_id, UUID)
+        self.assertTrue(plan.is_active)
+        self.assertEqual(
+            plan.professional_school,
+            self.school,
+        )
+        self.assertIn(
+            plan,
+            self.school.curriculum_plans.all(),
+        )
+
+    def test_normalizes_code_and_name(self) -> None:
+        plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='  plan   2025  ',
+            name='  Plan   de   Estudios   2025  ',
+        )
+
+        self.assertEqual(plan.code, 'PLAN 2025')
+        self.assertEqual(
+            plan.name,
+            'Plan de Estudios 2025',
+        )
+
+    def test_rejects_duplicate_code_in_same_school(
+        self,
+    ) -> None:
+        CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='PLAN 2025',
+            name='Primer plan',
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                CurriculumPlan.objects.create(
+                    professional_school=self.school,
+                    code='plan 2025',
+                    name='Plan duplicado',
+                )
+
+    def test_allows_same_code_in_different_school(
+        self,
+    ) -> None:
+        other_school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Industrial',
+        )
+
+        first_plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2025',
+            name='Plan de Sistemas',
+        )
+        second_plan = CurriculumPlan.objects.create(
+            professional_school=other_school,
+            code='2025',
+            name='Plan de Industrial',
+        )
+
+        self.assertNotEqual(
+            first_plan.public_id,
+            second_plan.public_id,
+        )
+
+    def test_protects_school_with_related_plans(
+        self,
+    ) -> None:
+        CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2025',
+            name='Plan de Estudios 2025',
+        )
+
+        with self.assertRaises(ProtectedError):
+            self.school.delete()
+
+    def test_returns_descriptive_string(self) -> None:
+        plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2025',
+            name='Plan de Estudios 2025',
+        )
+
+        self.assertEqual(
+            str(plan),
+            ('2025 — Plan de Estudios 2025 (Escuela Profesional de Sistemas)'),
         )
