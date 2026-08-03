@@ -1,3 +1,8 @@
+from unittest.mock import patch
+
+from allauth.socialaccount.adapter import (
+    DefaultSocialAccountAdapter,
+)
 from allauth.socialaccount.models import SocialLogin
 from django.test import RequestFactory, TestCase
 
@@ -55,4 +60,37 @@ class InstitutionalSocialAccountAdapterTests(TestCase):
                 self.request,
                 sociallogin,
             )
+        )
+
+    @patch.object(
+        DefaultSocialAccountAdapter,
+        'save_user',
+    )
+    def test_assigns_student_role_to_new_social_user(
+        self,
+        mocked_save_user,
+    ) -> None:
+        user = User.objects.create_user(
+            email='nuevo.estudiante@unsa.edu.pe',
+            password=None,
+        )
+        sociallogin = SocialLogin(user=user)
+
+        mocked_save_user.return_value = user
+
+        saved_user = self.adapter.save_user(
+            self.request,
+            sociallogin,
+        )
+
+        self.assertEqual(saved_user, user)
+        self.assertTrue(
+            user.groups.filter(
+                name='student',
+            ).exists()
+        )
+        mocked_save_user.assert_called_once_with(
+            self.request,
+            sociallogin,
+            None,
         )
