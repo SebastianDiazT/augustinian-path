@@ -17,3 +17,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
 
 class CSRFDataSerializer(serializers.Serializer):
     csrf_cookie_set = serializers.BooleanField()
+
+
+class LogoutDataSerializer(serializers.Serializer):
+    authenticated = serializers.BooleanField()
