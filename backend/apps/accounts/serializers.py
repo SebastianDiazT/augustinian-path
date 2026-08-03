@@ -8,6 +8,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         source='public_id',
         read_only=True,
     )
+    roles = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -16,8 +17,17 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
+            'roles',
         ]
         read_only_fields = fields
+
+    def get_roles(self, user: User) -> list[str]:
+        return list(
+            user.groups.order_by('name').values_list(
+                'name',
+                flat=True,
+            )
+        )
 
 
 class CSRFDataSerializer(serializers.Serializer):

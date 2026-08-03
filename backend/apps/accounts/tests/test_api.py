@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -29,6 +30,9 @@ class CurrentUserEndpointTests(APITestCase):
             last_name='Diaz',
         )
 
+        student_group = Group.objects.get(name='student')
+        user.groups.add(student_group)
+
         self.client.force_authenticate(user=user)
 
         response = self.client.get(self.endpoint)
@@ -45,7 +49,38 @@ class CurrentUserEndpointTests(APITestCase):
                 'email': 'estudiante@unsa.edu.pe',
                 'first_name': 'Sebastian',
                 'last_name': 'Diaz',
+                'roles': ['student'],
             },
+        )
+
+    def test_returns_all_user_roles_ordered_by_name(self) -> None:
+        user = User.objects.create_user(
+            email='administrador@unsa.edu.pe',
+            password='Prueba123!',
+        )
+
+        student_group = Group.objects.get(name='student')
+        admin_group = Group.objects.get(name='platform_admin')
+
+        user.groups.add(
+            student_group,
+            admin_group,
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.json()['data']['roles'],
+            [
+                'platform_admin',
+                'student',
+            ],
         )
 
 
