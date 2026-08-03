@@ -36,3 +36,7 @@ class CSRFDataSerializer(serializers.Serializer):
 
 class LogoutDataSerializer(serializers.Serializer):
     authenticated = serializers.BooleanField()
+
+
+class PlatformAdminAccessDataSerializer(serializers.Serializer):
+    authorized = serializers.BooleanField()

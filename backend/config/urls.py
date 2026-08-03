@@ -18,6 +18,10 @@ urlpatterns = [
         include('apps.accounts.urls'),
     ),
     path(
+        'api/v1/admin/',
+        include('apps.accounts.admin_urls'),
+    ),
+    path(
         'accounts/',
         include('allauth.urls'),
     ),
