@@ -15,7 +15,7 @@ class UserManager(BaseUserManager):
         **extra_fields: Any,
     ):
         if not email:
-            raise ValueError("El correo electrónico es obligatorio.")
+            raise ValueError('El correo electrónico es obligatorio.')
 
         normalized_email = self.normalize_email(email).lower()
 
@@ -35,8 +35,8 @@ class UserManager(BaseUserManager):
         password: str | None = None,
         **extra_fields: Any,
     ):
-        extra_fields.setdefault("is_staff", False)
-        extra_fields.setdefault("is_superuser", False)
+        extra_fields.setdefault('is_staff', False)
+        extra_fields.setdefault('is_superuser', False)
 
         return self._create_user(email, password, **extra_fields)
 
@@ -46,14 +46,14 @@ class UserManager(BaseUserManager):
         password: str | None = None,
         **extra_fields: Any,
     ):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
-        extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
 
-        if extra_fields.get("is_staff") is not True:
-            raise ValueError("El superusuario debe tener is_staff=True.")
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('El superusuario debe tener is_staff=True.')
 
-        if extra_fields.get("is_superuser") is not True:
-            raise ValueError("El superusuario debe tener is_superuser=True.")
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('El superusuario debe tener is_superuser=True.')
 
         return self._create_user(email, password, **extra_fields)

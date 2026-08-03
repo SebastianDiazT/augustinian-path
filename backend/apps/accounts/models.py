@@ -2,8 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from .validators import validate_institutional_email
 from .managers import UserManager
+from .validators import validate_institutional_email
 
 
 class User(AbstractUser):
@@ -12,12 +12,12 @@ class User(AbstractUser):
     username = None
 
     email = models.EmailField(
-        _("correo electrónico"),
+        _('correo electrónico'),
         unique=True,
         validators=[validate_institutional_email],
     )
 
-    USERNAME_FIELD = "email"
+    USERNAME_FIELD = 'email'
     REQUIRED_FIELDS: list[str] = []
 
     objects = UserManager()

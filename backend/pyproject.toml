@@ -6,5 +6,34 @@ requires-python = ">=3.14,<3.15"
 dependencies = [
     "django>=5.2.8,<5.3",
     "django-environ>=0.14.0",
+    "django-filter>=26.1",
+    "djangorestframework>=3.17.1",
+    "drf-spectacular>=0.30.0",
     "psycopg[binary]>=3.3,<4",
 ]
+
+[dependency-groups]
+dev = [
+    "ruff>=0.16.1",
+]
+
+[tool.ruff]
+target-version = 'py314'
+line-length = 88
+extend-exclude = [
+    'apps/*/migrations/*.py',
+]
+
+[tool.ruff.lint]
+select = [
+    'E',
+    'F',
+    'I',
+    'UP',
+    'B',
+]
+
+[tool.ruff.format]
+quote-style = 'single'
+indent-style = 'space'
+line-ending = 'auto'
