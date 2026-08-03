@@ -5,6 +5,7 @@ from django.db.models.deletion import ProtectedError
 from django.test import TestCase
 
 from apps.academics.models import (
+    Course,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -266,4 +267,130 @@ class CurriculumPlanTests(TestCase):
         self.assertEqual(
             str(plan),
             ('2025 — Plan de Estudios 2025 (Escuela Profesional de Sistemas)'),
+        )
+
+
+class CourseTests(TestCase):
+    def setUp(self) -> None:
+        self.faculty = Faculty.objects.create(
+            name='Facultad de Ingenieria',
+        )
+        self.school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Sistemas',
+        )
+
+    def test_creates_course_related_to_school(self) -> None:
+        course = Course.objects.create(
+            professional_school=self.school,
+            code='1701101',
+            name='Programacion de Computadoras',
+        )
+
+        self.assertIsInstance(course.public_id, UUID)
+        self.assertTrue(course.is_active)
+        self.assertEqual(
+            course.professional_school,
+            self.school,
+        )
+        self.assertIn(
+            course,
+            self.school.courses.all(),
+        )
+
+    def test_normalizes_code_and_name(self) -> None:
+        course = Course.objects.create(
+            professional_school=self.school,
+            code='  cs   101  ',
+            name='  Programacion   de   Computadoras  ',
+        )
+
+        self.assertEqual(course.code, 'CS 101')
+        self.assertEqual(
+            course.name,
+            'Programacion de Computadoras',
+        )
+
+    def test_rejects_duplicate_code_in_same_school(
+        self,
+    ) -> None:
+        Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Primer curso',
+        )
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Course.objects.create(
+                    professional_school=self.school,
+                    code='cs 101',
+                    name='Curso diferente',
+                )
+
+    def test_allows_same_code_in_different_school(
+        self,
+    ) -> None:
+        other_school = ProfessionalSchool.objects.create(
+            faculty=self.faculty,
+            name='Escuela Profesional de Industrial',
+        )
+
+        first_course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Programacion',
+        )
+        second_course = Course.objects.create(
+            professional_school=other_school,
+            code='CS 101',
+            name='Programacion',
+        )
+
+        self.assertNotEqual(
+            first_course.public_id,
+            second_course.public_id,
+        )
+
+    def test_allows_same_name_with_different_codes(
+        self,
+    ) -> None:
+        first_course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Programacion',
+        )
+        second_course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 201',
+            name='Programacion',
+        )
+
+        self.assertNotEqual(
+            first_course.public_id,
+            second_course.public_id,
+        )
+
+    def test_protects_school_with_related_courses(
+        self,
+    ) -> None:
+        Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Programacion',
+        )
+
+        with self.assertRaises(ProtectedError):
+            self.school.delete()
+
+    def test_returns_descriptive_string(self) -> None:
+        course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 101',
+            name='Programacion',
+        )
+
+        self.assertEqual(
+            str(course),
+            ('CS 101 — Programacion (Escuela Profesional de Sistemas)'),
         )
