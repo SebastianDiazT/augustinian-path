@@ -1,8 +1,13 @@
+from unittest.mock import patch
 from uuid import UUID
 
+from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
 from rest_framework import status
-from rest_framework.test import APITestCase
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.test import APIRequestFactory, APITestCase
+from rest_framework.views import APIView
 
 
 class HealthEndpointTests(APITestCase):
@@ -100,3 +105,55 @@ class HealthEndpointTests(APITestCase):
             response.headers['X-Request-ID'],
             request_id,
         )
+
+
+class UnexpectedErrorView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    def get(self, request: Request) -> Response:
+        raise RuntimeError(
+            'sensitive internal information',
+        )
+
+
+class UnhandledExceptionResponseTests(SimpleTestCase):
+    @patch('apps.core.exceptions.logger.error')
+    def test_returns_standard_internal_server_error(
+        self,
+        logger_error,
+    ) -> None:
+        request = APIRequestFactory().get(
+            '/api/v1/failure/',
+        )
+
+        response = UnexpectedErrorView.as_view()(
+            request,
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+        body = response.data
+
+        self.assertEqual(
+            body['error'],
+            {
+                'type': ('urn:augustinian-path:problem:internal-server-error'),
+                'title': 'Error interno del servidor',
+                'status': status.HTTP_500_INTERNAL_SERVER_ERROR,
+                'detail': ('Ha ocurrido un error interno del servidor.'),
+                'instance': '/api/v1/failure/',
+            },
+        )
+        self.assertEqual(
+            body['meta']['api_version'],
+            'v1',
+        )
+        self.assertNotIn(
+            'sensitive internal information',
+            str(body),
+        )
+        logger_error.assert_called_once()

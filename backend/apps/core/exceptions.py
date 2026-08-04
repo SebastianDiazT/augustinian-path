@@ -1,7 +1,9 @@
+import logging
 from typing import Any
 from uuid import uuid4
 
 from django.utils import timezone
+from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
@@ -17,6 +19,8 @@ ERROR_TITLES: dict[int, str] = {
     500: 'Error interno del servidor',
 }
 
+logger = logging.getLogger(__name__)
+
 
 def api_exception_handler(
     exc: Exception,
@@ -24,15 +28,33 @@ def api_exception_handler(
 ) -> Response | None:
     response = drf_exception_handler(exc, context)
 
-    if response is None:
-        return None
-
     request = context.get('request')
     request_id = getattr(request, 'request_id', None) or str(uuid4())
 
-    detail, errors = _extract_error_content(response.data)
+    if response is None:
+        logger.error(
+            'Unhandled API exception.',
+            exc_info=(
+                type(exc),
+                exc,
+                exc.__traceback__,
+            ),
+            extra={
+                'request_id': str(request_id),
+            },
+        )
 
-    problem_code = str(getattr(exc, 'default_code', 'api_error')).replace('_', '-')
+        response = Response(
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+        detail = 'Ha ocurrido un error interno del servidor.'
+        errors = None
+        problem_code = 'internal-server-error'
+    else:
+        detail, errors = _extract_error_content(
+            response.data,
+        )
+        problem_code = str(getattr(exc, 'default_code', 'api_error')).replace('_', '-')
 
     error: dict[str, Any] = {
         'type': f'urn:augustinian-path:problem:{problem_code}',
