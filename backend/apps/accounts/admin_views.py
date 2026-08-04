@@ -1,6 +1,7 @@
 from django.contrib.auth.models import Group
 from django.db.models import Prefetch
 from drf_spectacular.utils import OpenApiParameter, extend_schema
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,6 +11,7 @@ from rest_framework.views import APIView
 from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
+from apps.core.serializers import ApiErrorResponseSerializer
 
 from .filters import PlatformAdminUserFilter
 from .models import User
@@ -31,10 +33,13 @@ class PlatformAdminAccessView(APIView):
     @extend_schema(
         summary='Comprobar acceso administrativo',
         tags=['Administración'],
-        responses=success_response_schema(
-            component_name='PlatformAdminAccessSuccessResponse',
-            data_serializer=PlatformAdminAccessDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminAccessSuccessResponse',
+                data_serializer=PlatformAdminAccessDataSerializer,
+            ),
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         return success_response(
@@ -92,10 +97,14 @@ class PlatformAdminUserListView(APIView):
                 description=('Cantidad de usuarios por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminUserListSuccessResponse',
-            data_serializer=PlatformAdminUserListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminUserListSuccessResponse',
+                data_serializer=PlatformAdminUserListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         users = User.objects.prefetch_related(

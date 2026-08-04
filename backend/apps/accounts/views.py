@@ -71,10 +71,13 @@ class LogoutView(APIView):
         summary='Cerrar la sesión actual',
         tags=['Autenticación'],
         request=None,
-        responses=success_response_schema(
-            component_name='LogoutSuccessResponse',
-            data_serializer=LogoutDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='LogoutSuccessResponse',
+                data_serializer=LogoutDataSerializer,
+            ),
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def post(self, request: Request) -> Response:
         logout(request)
