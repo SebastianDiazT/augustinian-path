@@ -35,6 +35,33 @@ CSRF_TRUSTED_ORIGINS = env.list(
     default=[],
 )
 
+SECURE_SSL_REDIRECT = not DEBUG
+
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+
+SECURE_HSTS_SECONDS = env.int(
+    'DJANGO_SECURE_HSTS_SECONDS',
+    default=0,
+)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+    'DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS',
+    default=False,
+)
+SECURE_HSTS_PRELOAD = env.bool(
+    'DJANGO_SECURE_HSTS_PRELOAD',
+    default=False,
+)
+
+if env.bool(
+    'DJANGO_TRUST_PROXY_SSL_HEADER',
+    default=False,
+):
+    SECURE_PROXY_SSL_HEADER = (
+        'HTTP_X_FORWARDED_PROTO',
+        'https',
+    )
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
