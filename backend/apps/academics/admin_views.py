@@ -38,6 +38,7 @@ from .serializers import (
     CurriculumCourseSerializer,
     CurriculumPlanListDataSerializer,
     CurriculumPlanSerializer,
+    CurriculumPlanWriteSerializer,
     FacultyListDataSerializer,
     FacultySerializer,
     FacultyWriteSerializer,
@@ -407,6 +408,70 @@ class PlatformAdminCurriculumPlanListView(APIView):
                 'curriculum_plans': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear un plan de estudios',
+        tags=['Administración académica'],
+        request=CurriculumPlanWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: CurriculumPlanSerializer,
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = CurriculumPlanWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        plan = serializer.save()
+
+        return success_response(
+            data=CurriculumPlanSerializer(plan).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class PlatformAdminCurriculumPlanDetailView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar un plan de estudios',
+        tags=['Administración académica'],
+        request=CurriculumPlanWriteSerializer,
+        responses=CurriculumPlanSerializer,
+    )
+    def patch(
+        self,
+        request: Request,
+        plan_id: UUID,
+    ) -> Response:
+        plan = get_object_or_404(
+            CurriculumPlan.objects.select_related(
+                'professional_school',
+                'professional_school__faculty',
+            ),
+            public_id=plan_id,
+        )
+
+        serializer = CurriculumPlanWriteSerializer(
+            plan,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_plan = serializer.save()
+
+        return success_response(
+            data=CurriculumPlanSerializer(
+                updated_plan,
+            ).data,
             request_id=request.request_id,
         )
 
