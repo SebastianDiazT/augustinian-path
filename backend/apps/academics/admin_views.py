@@ -162,7 +162,10 @@ class PlatformAdminProfessionalSchoolDetailView(
         summary='Actualizar una escuela profesional',
         tags=['Administración académica'],
         request=ProfessionalSchoolWriteSerializer,
-        responses=ProfessionalSchoolSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminProfessionalSchoolSuccessResponse',
+            data_serializer=ProfessionalSchoolSerializer,
+        ),
     )
     def patch(
         self,
@@ -281,7 +284,10 @@ class PlatformAdminProfessionalSchoolListView(APIView):
                 description=('Cantidad de escuelas por página. Máximo: 100.'),
             ),
         ],
-        responses=ProfessionalSchoolListDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminProfessionalSchoolListSuccessResponse',
+            data_serializer=ProfessionalSchoolListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         school_filter = ProfessionalSchoolFilter(
@@ -321,7 +327,10 @@ class PlatformAdminProfessionalSchoolListView(APIView):
         tags=['Administración académica'],
         request=ProfessionalSchoolWriteSerializer,
         responses={
-            status.HTTP_201_CREATED: (ProfessionalSchoolSerializer),
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name='PlatformAdminProfessionalSchoolSuccessResponse',
+                data_serializer=ProfessionalSchoolSerializer,
+            ),
         },
     )
     def post(self, request: Request) -> Response:
