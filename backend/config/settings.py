@@ -220,6 +220,30 @@ REST_FRAMEWORK = {
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
     ],
+    'DEFAULT_THROTTLE_CLASSES': [
+        'apps.core.throttles.AnonymousBurstRateThrottle',
+        'apps.core.throttles.AnonymousSustainedRateThrottle',
+        'apps.core.throttles.UserBurstRateThrottle',
+        'apps.core.throttles.UserSustainedRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anonymous_burst': env(
+            'DJANGO_THROTTLE_ANONYMOUS_BURST_RATE',
+            default='120/min',
+        ),
+        'anonymous_sustained': env(
+            'DJANGO_THROTTLE_ANONYMOUS_SUSTAINED_RATE',
+            default='5000/day',
+        ),
+        'user_burst': env(
+            'DJANGO_THROTTLE_USER_BURST_RATE',
+            default='120/min',
+        ),
+        'user_sustained': env(
+            'DJANGO_THROTTLE_USER_SUSTAINED_RATE',
+            default='2000/day',
+        ),
+    },
     'EXCEPTION_HANDLER': ('apps.core.exceptions.api_exception_handler'),
 }
 
@@ -232,7 +256,7 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
     'POSTPROCESSING_HOOKS': [
         'drf_spectacular.hooks.postprocess_schema_enums',
-        ('apps.core.openapi.add_internal_server_error_response'),
+        ('apps.core.openapi.add_standard_error_responses'),
     ],
 }
 

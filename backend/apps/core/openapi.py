@@ -24,7 +24,7 @@ def success_response_schema(
     return SuccessResponseSerializer
 
 
-def add_internal_server_error_response(
+def add_standard_error_responses(
     result: dict[str, Any],
     **_: Any,
 ) -> dict[str, Any]:
@@ -35,6 +35,14 @@ def add_internal_server_error_response(
         'patch',
         'delete',
     }
+    error_responses = {
+        str(
+            status.HTTP_429_TOO_MANY_REQUESTS,
+        ): 'Límite de solicitudes excedido.',
+        str(
+            status.HTTP_500_INTERNAL_SERVER_ERROR,
+        ): 'Error interno del servidor.',
+    }
 
     for path_item in result.get(
         'paths',
@@ -44,21 +52,24 @@ def add_internal_server_error_response(
             if method not in methods:
                 continue
 
-            operation.setdefault(
+            responses = operation.setdefault(
                 'responses',
                 {},
-            ).setdefault(
-                str(status.HTTP_500_INTERNAL_SERVER_ERROR),
-                {
-                    'description': ('Error interno del servidor.'),
-                    'content': {
-                        'application/json': {
-                            'schema': {
-                                '$ref': ('#/components/schemas/ApiErrorResponse'),
+            )
+
+            for status_code, description in error_responses.items():
+                responses.setdefault(
+                    status_code,
+                    {
+                        'description': description,
+                        'content': {
+                            'application/json': {
+                                'schema': {
+                                    '$ref': ('#/components/schemas/ApiErrorResponse'),
+                                },
                             },
                         },
                     },
-                },
-            )
+                )
 
     return result
