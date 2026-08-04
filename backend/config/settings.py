@@ -9,25 +9,31 @@ ROOT_DIR = BASE_DIR.parent
 env = environ.Env()
 environ.Env.read_env(ROOT_DIR / '.env')
 
-SECRET_KEY = 'django-insecure-cuh&1%wd%u9mghc%tkp4jpk(7b&dg@w_drxnx%tie(l2pdph)%'
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
-DEBUG = True
+DEBUG = env.bool(
+    'DJANGO_DEBUG',
+    default=False,
+)
 
 SITE_ID = 1
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list(
+    'DJANGO_ALLOWED_HOSTS',
+    default=[],
+)
 
-CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+CORS_ALLOWED_ORIGINS = env.list(
+    'DJANGO_CORS_ALLOWED_ORIGINS',
+    default=[],
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
+CSRF_TRUSTED_ORIGINS = env.list(
+    'DJANGO_CSRF_TRUSTED_ORIGINS',
+    default=[],
+)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
