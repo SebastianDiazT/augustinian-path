@@ -3,6 +3,7 @@ from drf_spectacular.utils import (
     OpenApiParameter,
     extend_schema,
 )
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -12,6 +13,7 @@ from rest_framework.views import APIView
 from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
+from apps.core.serializers import ApiErrorResponseSerializer
 
 from .filters import (
     CourseFilter,
@@ -72,10 +74,14 @@ class FacultyCatalogListView(APIView):
                 description=('Cantidad de facultades por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='FacultyCatalogListSuccessResponse',
-            data_serializer=FacultyCatalogListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='FacultyCatalogListSuccessResponse',
+                data_serializer=FacultyCatalogListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         faculty_filter = FacultyFilter(
@@ -147,10 +153,14 @@ class ProfessionalSchoolCatalogListView(APIView):
                 description=('Cantidad de escuelas por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='ProfessionalSchoolCatalogListSuccessResponse',
-            data_serializer=ProfessionalSchoolCatalogListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='ProfessionalSchoolCatalogListSuccessResponse',
+                data_serializer=ProfessionalSchoolCatalogListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         school_filter = ProfessionalSchoolFilter(
@@ -227,10 +237,14 @@ class CurriculumPlanCatalogListView(APIView):
                 description=('Cantidad de planes por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='CurriculumPlanCatalogListSuccessResponse',
-            data_serializer=CurriculumPlanCatalogListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='CurriculumPlanCatalogListSuccessResponse',
+                data_serializer=CurriculumPlanCatalogListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         plan_filter = CurriculumPlanFilter(
@@ -309,10 +323,14 @@ class CourseCatalogListView(APIView):
                 description=('Cantidad de asignaturas por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='CourseCatalogListSuccessResponse',
-            data_serializer=CourseCatalogListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='CourseCatalogListSuccessResponse',
+                data_serializer=CourseCatalogListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         course_filter = CourseFilter(
@@ -398,10 +416,14 @@ class CurriculumCourseCatalogListView(APIView):
                 description=('Cantidad de registros por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='CurriculumCourseCatalogListSuccessResponse',
-            data_serializer=CurriculumCourseCatalogListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='CurriculumCourseCatalogListSuccessResponse',
+                data_serializer=CurriculumCourseCatalogListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         curriculum_course_filter = CurriculumCourseFilter(
