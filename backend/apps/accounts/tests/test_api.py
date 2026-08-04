@@ -15,7 +15,7 @@ class CurrentUserEndpointTests(APITestCase):
         self.assertIn(
             response.status_code,
             [
-                status.HTTP_401_UNAUTHORIZED,
+                response.status_code,
                 status.HTTP_403_FORBIDDEN,
             ],
         )

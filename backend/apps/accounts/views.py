@@ -2,6 +2,7 @@ from django.contrib.auth import logout
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.utils import extend_schema
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -9,6 +10,7 @@ from rest_framework.views import APIView
 
 from apps.core.openapi import success_response_schema
 from apps.core.responses import success_response
+from apps.core.serializers import ApiErrorResponseSerializer
 
 from .serializers import (
     CSRFDataSerializer,
@@ -23,10 +25,13 @@ class CurrentUserView(APIView):
     @extend_schema(
         summary='Obtener el usuario autenticado',
         tags=['Autenticación'],
-        responses=success_response_schema(
-            component_name='CurrentUserSuccessResponse',
-            data_serializer=CurrentUserSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='CurrentUserSuccessResponse',
+                data_serializer=CurrentUserSerializer,
+            ),
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         serializer = CurrentUserSerializer(request.user)
