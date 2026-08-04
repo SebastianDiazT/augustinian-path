@@ -760,10 +760,14 @@ class PlatformAdminCurriculumCourseListView(APIView):
                 description=('Cantidad de registros por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminCurriculumCourseListSuccessResponse',
-            data_serializer=CurriculumCourseListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCurriculumCourseListSuccessResponse',
+                data_serializer=CurriculumCourseListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         curriculum_course_filter = CurriculumCourseFilter(
@@ -810,6 +814,8 @@ class PlatformAdminCurriculumCourseListView(APIView):
                 component_name='PlatformAdminCurriculumCourseSuccessResponse',
                 data_serializer=CurriculumCourseSerializer,
             ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
         },
     )
     def post(self, request: Request) -> Response:
@@ -841,10 +847,15 @@ class PlatformAdminCurriculumCourseDetailView(
         summary='Actualizar una asignatura de un plan',
         tags=['Administración académica'],
         request=CurriculumCourseWriteSerializer,
-        responses=success_response_schema(
-            component_name='PlatformAdminCurriculumCourseSuccessResponse',
-            data_serializer=CurriculumCourseSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCurriculumCourseSuccessResponse',
+                data_serializer=CurriculumCourseSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
+        },
     )
     def patch(
         self,
