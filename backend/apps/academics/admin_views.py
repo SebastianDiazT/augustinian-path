@@ -14,16 +14,20 @@ from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 
 from .filters import (
+    CourseFilter,
     CurriculumPlanFilter,
     FacultyFilter,
     ProfessionalSchoolFilter,
 )
 from .models import (
+    Course,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
 )
 from .serializers import (
+    CourseListDataSerializer,
+    CourseSerializer,
     CurriculumPlanListDataSerializer,
     CurriculumPlanSerializer,
     FacultyListDataSerializer,
@@ -263,6 +267,89 @@ class PlatformAdminCurriculumPlanListView(APIView):
         return success_response(
             data={
                 'curriculum_plans': serializer.data,
+                'pagination': paginator.get_metadata(),
+            },
+            request_id=request.request_id,
+        )
+
+
+class PlatformAdminCourseListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Listar asignaturas de la UNSA',
+        tags=['Administración académica'],
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Busca parcialmente por código o nombre.',
+            ),
+            OpenApiParameter(
+                name='professional_school',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Filtra por el UUID público de la escuela profesional.'),
+            ),
+            OpenApiParameter(
+                name='is_active',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por estado activo.',
+            ),
+            OpenApiParameter(
+                name='page',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Número de página.',
+            ),
+            OpenApiParameter(
+                name='page_size',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Cantidad de asignaturas por página. Máximo: 100.'),
+            ),
+        ],
+        responses=CourseListDataSerializer,
+    )
+    def get(self, request: Request) -> Response:
+        course_filter = CourseFilter(
+            data=request.query_params,
+            queryset=(
+                Course.objects.select_related(
+                    'professional_school',
+                    'professional_school__faculty',
+                ).all()
+            ),
+        )
+
+        if not course_filter.is_valid():
+            raise ValidationError(course_filter.errors)
+
+        paginator = StandardPageNumberPagination()
+        page = paginator.paginate_queryset(
+            course_filter.qs,
+            request,
+            view=self,
+        )
+
+        serializer = CourseSerializer(
+            page,
+            many=True,
+        )
+
+        return success_response(
+            data={
+                'courses': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
             request_id=request.request_id,

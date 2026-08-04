@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .admin_views import (
+    PlatformAdminCourseListView,
     PlatformAdminCurriculumPlanListView,
     PlatformAdminFacultyListView,
     PlatformAdminProfessionalSchoolListView,
@@ -23,5 +24,10 @@ urlpatterns = [
         'curriculum-plans/',
         PlatformAdminCurriculumPlanListView.as_view(),
         name='curriculum-plan-list',
+    ),
+    path(
+        'courses/',
+        PlatformAdminCourseListView.as_view(),
+        name='course-list',
     ),
 ]

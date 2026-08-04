@@ -7,6 +7,7 @@ from django_filters import (
 )
 
 from .models import (
+    Course,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -59,6 +60,35 @@ class CurriculumPlanFilter(FilterSet):
         name: str,
         value: str,
     ) -> QuerySet[CurriculumPlan]:
+        search_term = value.strip()
+
+        if not search_term:
+            return queryset
+
+        return queryset.filter(
+            Q(code__icontains=search_term) | Q(name__icontains=search_term)
+        )
+
+
+class CourseFilter(FilterSet):
+    search = CharFilter(
+        method='filter_search',
+    )
+    professional_school = UUIDFilter(
+        field_name='professional_school__public_id',
+    )
+    is_active = BooleanFilter()
+
+    class Meta:
+        model = Course
+        fields: list[str] = []
+
+    def filter_search(
+        self,
+        queryset: QuerySet[Course],
+        name: str,
+        value: str,
+    ) -> QuerySet[Course]:
         search_term = value.strip()
 
         if not search_term:
