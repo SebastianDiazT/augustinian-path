@@ -586,10 +586,14 @@ class PlatformAdminCourseListView(APIView):
                 description=('Cantidad de asignaturas por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminCourseListSuccessResponse',
-            data_serializer=CourseListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCourseListSuccessResponse',
+                data_serializer=CourseListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         course_filter = CourseFilter(
@@ -634,6 +638,8 @@ class PlatformAdminCourseListView(APIView):
                 component_name='PlatformAdminCourseSuccessResponse',
                 data_serializer=CourseSerializer,
             ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
         },
     )
     def post(self, request: Request) -> Response:
@@ -661,10 +667,15 @@ class PlatformAdminCourseDetailView(APIView):
         summary='Actualizar una asignatura',
         tags=['Administración académica'],
         request=CourseWriteSerializer,
-        responses=success_response_schema(
-            component_name='PlatformAdminCourseSuccessResponse',
-            data_serializer=CourseSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCourseSuccessResponse',
+                data_serializer=CourseSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
+        },
     )
     def patch(
         self,
