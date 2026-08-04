@@ -1,127 +1,50 @@
-import { useState } from 'react';
-import reactLogo from './assets/react.svg';
-import viteLogo from './assets/vite.svg';
-import heroImg from './assets/hero.png';
-import './App.css';
+import { ThemeSelector } from './theme/theme-selector';
 
 function App() {
-    const [count, setCount] = useState(0);
-
     return (
-        <>
-            <section id='center'>
-                <div className='hero'>
-                    <img
-                        src={heroImg}
-                        className='base'
-                        width='170'
-                        height='179'
-                        alt=''
-                    />
-                    <img src={reactLogo} className='framework' alt='React logo' />
-                    <img src={viteLogo} className='vite' alt='Vite logo' />
-                </div>
-                <div>
-                    <h1>Get started</h1>
-                    <p>
-                        Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
+        <main className='min-h-screen bg-background px-6 py-10 text-foreground transition-colors'>
+            <div className='mx-auto max-w-5xl'>
+                <header className='flex flex-wrap items-center justify-between gap-6'>
+                    <div>
+                        <p className='mb-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
+                            Universidad Nacional de San Agustín
+                        </p>
+                        <h1 className='font-display text-4xl font-extrabold tracking-[-0.045em] sm:text-5xl'>
+                            Ruta UNSA
+                        </h1>
+                    </div>
+
+                    <ThemeSelector />
+                </header>
+
+                <section className='mt-12 rounded-3xl border border-border bg-surface p-8 shadow-card sm:p-10'>
+                    <span className='inline-flex rounded-full bg-accent px-3 py-1 text-sm font-semibold text-accent-foreground'>
+                        Sistema visual
+                    </span>
+
+                    <h2 className='mt-5 font-display text-2xl font-bold tracking-[-0.025em]'>
+                        Planifica tu camino. Construye tu futuro.
+                    </h2>
+
+                    <p className='mt-3 max-w-2xl text-[0.95rem] leading-7 font-medium text-muted-foreground'>
+                        Esta pantalla verifica los colores semánticos y el cambio entre
+                        los temas claro, oscuro y del sistema.
                     </p>
-                </div>
-                <button
-                    type='button'
-                    className='counter'
-                    onClick={() => setCount((count) => count + 1)}
-                >
-                    Count is {count}
-                </button>
-            </section>
 
-            <div className='ticks'></div>
-
-            <section id='next-steps'>
-                <div id='docs'>
-                    <svg className='icon' role='presentation' aria-hidden='true'>
-                        <use href='/icons.svg#documentation-icon'></use>
-                    </svg>
-                    <h2>Documentation</h2>
-                    <p>Your questions, answered</p>
-                    <ul>
-                        <li>
-                            <a href='https://vite.dev/' target='_blank'>
-                                <img className='logo' src={viteLogo} alt='' />
-                                Explore Vite
-                            </a>
-                        </li>
-                        <li>
-                            <a href='https://react.dev/' target='_blank'>
-                                <img className='button-icon' src={reactLogo} alt='' />
-                                Learn more
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-                <div id='social'>
-                    <svg className='icon' role='presentation' aria-hidden='true'>
-                        <use href='/icons.svg#social-icon'></use>
-                    </svg>
-                    <h2>Connect with us</h2>
-                    <p>Join the Vite community</p>
-                    <ul>
-                        <li>
-                            <a href='https://github.com/vitejs/vite' target='_blank'>
-                                <svg
-                                    className='button-icon'
-                                    role='presentation'
-                                    aria-hidden='true'
-                                >
-                                    <use href='/icons.svg#github-icon'></use>
-                                </svg>
-                                GitHub
-                            </a>
-                        </li>
-                        <li>
-                            <a href='https://chat.vite.dev/' target='_blank'>
-                                <svg
-                                    className='button-icon'
-                                    role='presentation'
-                                    aria-hidden='true'
-                                >
-                                    <use href='/icons.svg#discord-icon'></use>
-                                </svg>
-                                Discord
-                            </a>
-                        </li>
-                        <li>
-                            <a href='https://x.com/vite_js' target='_blank'>
-                                <svg
-                                    className='button-icon'
-                                    role='presentation'
-                                    aria-hidden='true'
-                                >
-                                    <use href='/icons.svg#x-icon'></use>
-                                </svg>
-                                X.com
-                            </a>
-                        </li>
-                        <li>
-                            <a href='https://bsky.app/profile/vite.dev' target='_blank'>
-                                <svg
-                                    className='button-icon'
-                                    role='presentation'
-                                    aria-hidden='true'
-                                >
-                                    <use href='/icons.svg#bluesky-icon'></use>
-                                </svg>
-                                Bluesky
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-
-            <div className='ticks'></div>
-            <section id='spacer'></section>
-        </>
+                    <div className='mt-8 grid gap-4 sm:grid-cols-3'>
+                        <div className='rounded-2xl bg-primary p-5 text-primary-foreground'>
+                            Acción principal
+                        </div>
+                        <div className='rounded-2xl bg-accent p-5 text-accent-foreground'>
+                            Acento dorado
+                        </div>
+                        <div className='rounded-2xl border border-border bg-surface-muted p-5'>
+                            Superficie secundaria
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
     );
 }
 

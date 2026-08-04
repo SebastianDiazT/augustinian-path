@@ -1,0 +1,61 @@
+:root {
+    color-scheme: light;
+
+    --app-background: #f7f5f2;
+    --app-surface: #ffffff;
+    --app-surface-muted: #eeeae5;
+    --app-foreground: #333333;
+    --app-muted-foreground: #696164;
+    --app-primary: #800020;
+    --app-primary-hover: #650019;
+    --app-primary-foreground: #ffffff;
+    --app-accent: #c8a24a;
+    --app-accent-foreground: #352906;
+    --app-border: #d9d6d2;
+    --app-ring: #9f2044;
+    --app-card-shadow: 0 1.5rem 4.5rem rgb(51 51 51 / 10%);
+}
+
+:root[data-theme='dark'] {
+    color-scheme: dark;
+
+    --app-background: #161214;
+    --app-surface: #211a1d;
+    --app-surface-muted: #2c2327;
+    --app-foreground: #f7f5f2;
+    --app-muted-foreground: #b9b0b3;
+    --app-primary: #bd3655;
+    --app-primary-hover: #d04a67;
+    --app-primary-foreground: #ffffff;
+    --app-accent: #d8b75e;
+    --app-accent-foreground: #211a1d;
+    --app-border: #40363a;
+    --app-ring: #d8b75e;
+    --app-card-shadow: 0 1.5rem 4.5rem rgb(0 0 0 / 35%);
+}
+
+@theme inline {
+    --color-background: var(--app-background);
+    --color-surface: var(--app-surface);
+    --color-surface-muted: var(--app-surface-muted);
+    --color-foreground: var(--app-foreground);
+    --color-muted-foreground: var(--app-muted-foreground);
+    --color-primary: var(--app-primary);
+    --color-primary-hover: var(--app-primary-hover);
+    --color-primary-foreground: var(--app-primary-foreground);
+    --color-accent: var(--app-accent);
+    --color-accent-foreground: var(--app-accent-foreground);
+    --color-border: var(--app-border);
+    --color-ring: var(--app-ring);
+
+    --color-brand-burgundy: #800020;
+    --color-brand-gold: #c8a24a;
+    --color-brand-charcoal: #333333;
+    --color-brand-ivory: #f7f5f2;
+    --color-brand-gray: #d9d6d2;
+
+    --shadow-card: var(--app-card-shadow);
+
+    --font-sans: 'Manrope Variable', Manrope, ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Manrope Variable', Manrope, ui-sans-serif, system-ui, sans-serif;
+}
