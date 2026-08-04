@@ -140,6 +140,27 @@ DATABASES = {
     }
 }
 
+REDIS_URL = env(
+    'REDIS_URL',
+    default='',
+)
+
+if REDIS_URL:
+    CACHES = {
+        'default': {
+            'BACKEND': ('django.core.cache.backends.redis.RedisCache'),
+            'LOCATION': REDIS_URL,
+            'KEY_PREFIX': 'augustinian-path',
+        },
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': ('django.core.cache.backends.locmem.LocMemCache'),
+            'LOCATION': 'augustinian-path-local',
+            'KEY_PREFIX': 'augustinian-path',
+        },
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

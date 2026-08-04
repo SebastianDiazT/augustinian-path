@@ -423,11 +423,20 @@ urlpatterns = [
 class ThrottledResponseTests(APITestCase):
     endpoint = '/throttled/'
 
+    cache_key = (
+        TwoRequestAnonymousThrottle.cache_format
+        % {
+            'scope': TwoRequestAnonymousThrottle.scope,
+            'ident': '127.0.0.1',
+        }
+        + ':throttled-test'
+    )
+
     def setUp(self) -> None:
-        cache.clear()
+        cache.delete(self.cache_key)
 
     def tearDown(self) -> None:
-        cache.clear()
+        cache.delete(self.cache_key)
 
     def test_returns_standard_throttled_response(
         self,
