@@ -552,7 +552,10 @@ class PlatformAdminCourseListView(APIView):
                 description=('Cantidad de asignaturas por página. Máximo: 100.'),
             ),
         ],
-        responses=CourseListDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminCourseListSuccessResponse',
+            data_serializer=CourseListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         course_filter = CourseFilter(
@@ -593,7 +596,10 @@ class PlatformAdminCourseListView(APIView):
         tags=['Administración académica'],
         request=CourseWriteSerializer,
         responses={
-            status.HTTP_201_CREATED: CourseSerializer,
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name='PlatformAdminCourseSuccessResponse',
+                data_serializer=CourseSerializer,
+            ),
         },
     )
     def post(self, request: Request) -> Response:
@@ -621,7 +627,10 @@ class PlatformAdminCourseDetailView(APIView):
         summary='Actualizar una asignatura',
         tags=['Administración académica'],
         request=CourseWriteSerializer,
-        responses=CourseSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminCourseSuccessResponse',
+            data_serializer=CourseSerializer,
+        ),
     )
     def patch(
         self,
