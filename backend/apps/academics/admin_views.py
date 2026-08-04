@@ -17,6 +17,7 @@ from apps.accounts.permissions import IsPlatformAdmin
 from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
+from apps.core.serializers import ApiErrorResponseSerializer
 
 from .filters import (
     CourseFilter,
@@ -90,10 +91,14 @@ class PlatformAdminFacultyListView(APIView):
                 description=('Cantidad de facultades por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminFacultyListSuccessResponse',
-            data_serializer=FacultyListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminFacultyListSuccessResponse',
+                data_serializer=FacultyListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         faculty_filter = FacultyFilter(
@@ -133,6 +138,8 @@ class PlatformAdminFacultyListView(APIView):
                 component_name='PlatformAdminFacultySuccessResponse',
                 data_serializer=FacultySerializer,
             ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
         },
     )
     def post(self, request: Request) -> Response:
@@ -206,10 +213,15 @@ class PlatformAdminFacultyDetailView(APIView):
         summary='Actualizar una facultad de la UNSA',
         tags=['Administración académica'],
         request=FacultyWriteSerializer,
-        responses=success_response_schema(
-            component_name='PlatformAdminFacultySuccessResponse',
-            data_serializer=FacultySerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminFacultySuccessResponse',
+                data_serializer=FacultySerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
+        },
     )
     def patch(
         self,
