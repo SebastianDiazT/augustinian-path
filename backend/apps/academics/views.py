@@ -9,6 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 
@@ -71,7 +72,10 @@ class FacultyCatalogListView(APIView):
                 description=('Cantidad de facultades por página. Máximo: 100.'),
             ),
         ],
-        responses=FacultyCatalogListDataSerializer,
+        responses=success_response_schema(
+            component_name='FacultyCatalogListSuccessResponse',
+            data_serializer=FacultyCatalogListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         faculty_filter = FacultyFilter(
@@ -143,7 +147,10 @@ class ProfessionalSchoolCatalogListView(APIView):
                 description=('Cantidad de escuelas por página. Máximo: 100.'),
             ),
         ],
-        responses=ProfessionalSchoolCatalogListDataSerializer,
+        responses=success_response_schema(
+            component_name='ProfessionalSchoolCatalogListSuccessResponse',
+            data_serializer=ProfessionalSchoolCatalogListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         school_filter = ProfessionalSchoolFilter(
@@ -220,7 +227,10 @@ class CurriculumPlanCatalogListView(APIView):
                 description=('Cantidad de planes por página. Máximo: 100.'),
             ),
         ],
-        responses=CurriculumPlanCatalogListDataSerializer,
+        responses=success_response_schema(
+            component_name='CurriculumPlanCatalogListSuccessResponse',
+            data_serializer=CurriculumPlanCatalogListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         plan_filter = CurriculumPlanFilter(
@@ -299,7 +309,10 @@ class CourseCatalogListView(APIView):
                 description=('Cantidad de asignaturas por página. Máximo: 100.'),
             ),
         ],
-        responses=CourseCatalogListDataSerializer,
+        responses=success_response_schema(
+            component_name='CourseCatalogListSuccessResponse',
+            data_serializer=CourseCatalogListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         course_filter = CourseFilter(
@@ -385,7 +398,10 @@ class CurriculumCourseCatalogListView(APIView):
                 description=('Cantidad de registros por página. Máximo: 100.'),
             ),
         ],
-        responses=CurriculumCourseCatalogListDataSerializer,
+        responses=success_response_schema(
+            component_name='CurriculumCourseCatalogListSuccessResponse',
+            data_serializer=CurriculumCourseCatalogListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         curriculum_course_filter = CurriculumCourseFilter(
