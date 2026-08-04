@@ -1,8 +1,12 @@
+from uuid import UUID
+
+from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import (
     OpenApiParameter,
     extend_schema,
 )
+from rest_framework import status
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -36,6 +40,7 @@ from .serializers import (
     CurriculumPlanSerializer,
     FacultyListDataSerializer,
     FacultySerializer,
+    FacultyWriteSerializer,
     ProfessionalSchoolListDataSerializer,
     ProfessionalSchoolSerializer,
 )
@@ -108,6 +113,67 @@ class PlatformAdminFacultyListView(APIView):
                 'faculties': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear una facultad de la UNSA',
+        tags=['Administración académica'],
+        request=FacultyWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: FacultySerializer,
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = FacultyWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        faculty = serializer.save()
+
+        return success_response(
+            data=FacultySerializer(faculty).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class PlatformAdminFacultyDetailView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar una facultad de la UNSA',
+        tags=['Administración académica'],
+        request=FacultyWriteSerializer,
+        responses=FacultySerializer,
+    )
+    def patch(
+        self,
+        request: Request,
+        faculty_id: UUID,
+    ) -> Response:
+        faculty = get_object_or_404(
+            Faculty,
+            public_id=faculty_id,
+        )
+
+        serializer = FacultyWriteSerializer(
+            faculty,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_faculty = serializer.save()
+
+        return success_response(
+            data=FacultySerializer(
+                updated_faculty,
+            ).data,
             request_id=request.request_id,
         )
 

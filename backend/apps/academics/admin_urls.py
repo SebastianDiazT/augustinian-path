@@ -4,6 +4,7 @@ from .admin_views import (
     PlatformAdminCourseListView,
     PlatformAdminCurriculumCourseListView,
     PlatformAdminCurriculumPlanListView,
+    PlatformAdminFacultyDetailView,
     PlatformAdminFacultyListView,
     PlatformAdminProfessionalSchoolListView,
 )
@@ -35,5 +36,10 @@ urlpatterns = [
         'curriculum-courses/',
         PlatformAdminCurriculumCourseListView.as_view(),
         name='curriculum-course-list',
+    ),
+    path(
+        'faculties/<uuid:faculty_id>/',
+        PlatformAdminFacultyDetailView.as_view(),
+        name='faculty-detail',
     ),
 ]
