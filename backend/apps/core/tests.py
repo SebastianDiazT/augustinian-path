@@ -3,6 +3,7 @@ from uuid import UUID
 
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
+from drf_spectacular.generators import SchemaGenerator
 from rest_framework import status
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -157,3 +158,50 @@ class UnhandledExceptionResponseTests(SimpleTestCase):
             str(body),
         )
         logger_error.assert_called_once()
+
+
+class OpenApiSchemaTests(SimpleTestCase):
+    def test_documents_internal_server_errors(
+        self,
+    ) -> None:
+        schema = SchemaGenerator().get_schema(
+            request=None,
+            public=True,
+        )
+
+        operations = []
+
+        for path, path_item in schema['paths'].items():
+            for method in (
+                'get',
+                'post',
+                'put',
+                'patch',
+                'delete',
+            ):
+                operation = path_item.get(method)
+
+                if operation is not None:
+                    operations.append(
+                        (
+                            path,
+                            method,
+                            operation,
+                        )
+                    )
+
+        self.assertGreater(len(operations), 0)
+
+        for path, method, operation in operations:
+            with self.subTest(
+                path=path,
+                method=method,
+            ):
+                response = operation['responses']['500']
+
+                self.assertEqual(
+                    response['content']['application/json']['schema'],
+                    {
+                        '$ref': ('#/components/schemas/ApiErrorResponse'),
+                    },
+                )
