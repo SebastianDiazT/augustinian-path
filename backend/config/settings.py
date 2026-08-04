@@ -62,7 +62,7 @@ if env.bool(
         'https',
     )
 
-INSTALLED_APPS = [
+DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -70,7 +70,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    # Third-party apps
+]
+
+THIRD_PARTY_APPS = [
     'corsheaders',
     'allauth',
     'allauth.account',
@@ -80,10 +82,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'django_filters',
     'drf_spectacular',
-    # Local apps
+]
+
+LOCAL_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.academics',
+]
+
+INSTALLED_APPS = [
+    *DJANGO_APPS,
+    *THIRD_PARTY_APPS,
+    *LOCAL_APPS,
 ]
 
 MIDDLEWARE = [
