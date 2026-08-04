@@ -530,6 +530,37 @@ class CourseSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CourseCatalogSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    professional_school = ProfessionalSchoolCatalogSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = Course
+        fields = [
+            'id',
+            'professional_school',
+            'code',
+            'name',
+        ]
+        read_only_fields = fields
+
+
+class CourseCatalogListDataSerializer(
+    serializers.Serializer,
+):
+    courses = CourseCatalogSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
 class CourseWriteSerializer(serializers.ModelSerializer):
     professional_school_id = serializers.SlugRelatedField(
         source='professional_school',
