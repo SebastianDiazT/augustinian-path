@@ -2,6 +2,7 @@ from django.urls import path
 
 from .views import (
     CourseCatalogListView,
+    CurriculumCourseCatalogListView,
     CurriculumPlanCatalogListView,
     FacultyCatalogListView,
     ProfessionalSchoolCatalogListView,
@@ -29,5 +30,10 @@ urlpatterns = [
         'courses/',
         CourseCatalogListView.as_view(),
         name='course-list',
+    ),
+    path(
+        'curriculum-courses/',
+        CurriculumCourseCatalogListView.as_view(),
+        name='curriculum-course-list',
     ),
 ]

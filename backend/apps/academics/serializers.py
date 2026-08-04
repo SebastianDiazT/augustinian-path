@@ -744,6 +744,41 @@ class CurriculumCourseSerializer(
         read_only_fields = fields
 
 
+class CurriculumCourseCatalogSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    curriculum_plan = CurriculumPlanCatalogSerializer(
+        read_only=True,
+    )
+    course = CourseReferenceSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = CurriculumCourse
+        fields = [
+            'id',
+            'curriculum_plan',
+            'course',
+            'cycle',
+            'credits',
+        ]
+        read_only_fields = fields
+
+
+class CurriculumCourseCatalogListDataSerializer(
+    serializers.Serializer,
+):
+    curriculum_courses = CurriculumCourseCatalogSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
 class CurriculumCourseWriteSerializer(
     serializers.ModelSerializer,
 ):
