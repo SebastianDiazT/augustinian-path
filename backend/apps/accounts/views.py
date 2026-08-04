@@ -58,6 +58,7 @@ class LogoutView(APIView):
     @extend_schema(
         summary='Cerrar la sesión actual',
         tags=['Autenticación'],
+        request=None,
         responses=LogoutDataSerializer,
     )
     def post(self, request: Request) -> Response:
