@@ -3,11 +3,13 @@ from django_filters import (
     BooleanFilter,
     CharFilter,
     FilterSet,
+    NumberFilter,
     UUIDFilter,
 )
 
 from .models import (
     Course,
+    CurriculumCourse,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -96,4 +98,37 @@ class CourseFilter(FilterSet):
 
         return queryset.filter(
             Q(code__icontains=search_term) | Q(name__icontains=search_term)
+        )
+
+
+class CurriculumCourseFilter(FilterSet):
+    search = CharFilter(
+        method='filter_search',
+    )
+    curriculum_plan = UUIDFilter(
+        field_name='curriculum_plan__public_id',
+    )
+    professional_school = UUIDFilter(
+        field_name=('curriculum_plan__professional_school__public_id'),
+    )
+    cycle = NumberFilter()
+
+    class Meta:
+        model = CurriculumCourse
+        fields: list[str] = []
+
+    def filter_search(
+        self,
+        queryset: QuerySet[CurriculumCourse],
+        name: str,
+        value: str,
+    ) -> QuerySet[CurriculumCourse]:
+        search_term = value.strip()
+
+        if not search_term:
+            return queryset
+
+        return queryset.filter(
+            Q(course__code__icontains=search_term)
+            | Q(course__name__icontains=search_term)
         )

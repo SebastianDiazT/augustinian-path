@@ -15,12 +15,14 @@ from apps.core.responses import success_response
 
 from .filters import (
     CourseFilter,
+    CurriculumCourseFilter,
     CurriculumPlanFilter,
     FacultyFilter,
     ProfessionalSchoolFilter,
 )
 from .models import (
     Course,
+    CurriculumCourse,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -28,6 +30,8 @@ from .models import (
 from .serializers import (
     CourseListDataSerializer,
     CourseSerializer,
+    CurriculumCourseListDataSerializer,
+    CurriculumCourseSerializer,
     CurriculumPlanListDataSerializer,
     CurriculumPlanSerializer,
     FacultyListDataSerializer,
@@ -350,6 +354,100 @@ class PlatformAdminCourseListView(APIView):
         return success_response(
             data={
                 'courses': serializer.data,
+                'pagination': paginator.get_metadata(),
+            },
+            request_id=request.request_id,
+        )
+
+
+class PlatformAdminCurriculumCourseListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Listar asignaturas de planes de estudios',
+        tags=['Administración académica'],
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=(
+                    'Busca parcialmente por código o nombre de la asignatura.'
+                ),
+            ),
+            OpenApiParameter(
+                name='curriculum_plan',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Filtra por el UUID público del plan.'),
+            ),
+            OpenApiParameter(
+                name='professional_school',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Filtra por el UUID público de la escuela.'),
+            ),
+            OpenApiParameter(
+                name='cycle',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por ciclo académico.',
+            ),
+            OpenApiParameter(
+                name='page',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Número de página.',
+            ),
+            OpenApiParameter(
+                name='page_size',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Cantidad de registros por página. Máximo: 100.'),
+            ),
+        ],
+        responses=CurriculumCourseListDataSerializer,
+    )
+    def get(self, request: Request) -> Response:
+        curriculum_course_filter = CurriculumCourseFilter(
+            data=request.query_params,
+            queryset=(
+                CurriculumCourse.objects.select_related(
+                    'curriculum_plan',
+                    'curriculum_plan__professional_school',
+                    ('curriculum_plan__professional_school__faculty'),
+                    'course',
+                ).all()
+            ),
+        )
+
+        if not curriculum_course_filter.is_valid():
+            raise ValidationError(curriculum_course_filter.errors)
+
+        paginator = StandardPageNumberPagination()
+        page = paginator.paginate_queryset(
+            curriculum_course_filter.qs,
+            request,
+            view=self,
+        )
+
+        serializer = CurriculumCourseSerializer(
+            page,
+            many=True,
+        )
+
+        return success_response(
+            data={
+                'curriculum_courses': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
             request_id=request.request_id,
