@@ -5,6 +5,8 @@ from django.utils import timezone
 from rest_framework.response import Response
 from rest_framework.views import exception_handler as drf_exception_handler
 
+from .constants import API_VERSION
+
 ERROR_TITLES: dict[int, str] = {
     400: 'Solicitud inválida',
     401: 'Autenticación requerida',
@@ -50,7 +52,7 @@ def api_exception_handler(
         'error': error,
         'meta': {
             'request_id': request_id,
-            'api_version': 'v1',
+            'api_version': API_VERSION,
             'timestamp': timezone.now().isoformat(),
         },
     }

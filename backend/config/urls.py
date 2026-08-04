@@ -5,29 +5,33 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/v1/', include('apps.core.urls')),
+from apps.core.constants import API_PATH_PREFIX
+
+api_urlpatterns = [
+    path('', include('apps.core.urls')),
     path(
-        'api/schema/',
-        SpectacularAPIView.as_view(),
-        name='schema',
-    ),
-    path(
-        'api/v1/auth/',
+        'auth/',
         include('apps.accounts.urls'),
     ),
     path(
-        'api/v1/admin/',
+        'admin/',
         include('apps.accounts.admin_urls'),
     ),
     path(
-        'api/v1/admin/',
+        'admin/',
         include('apps.academics.admin_urls'),
     ),
     path(
-        'api/v1/academics/',
+        'academics/',
         include('apps.academics.urls'),
+    ),
+]
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path(
+        API_PATH_PREFIX,
+        include(api_urlpatterns),
     ),
     path(
         'accounts/',
@@ -44,7 +48,9 @@ urlpatterns = [
     ),
     path(
         'api/docs/',
-        SpectacularSwaggerView.as_view(url_name='schema'),
+        SpectacularSwaggerView.as_view(
+            url_name='schema',
+        ),
         name='swagger-ui',
     ),
 ]

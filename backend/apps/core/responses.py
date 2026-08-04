@@ -3,6 +3,8 @@ from typing import Any
 from django.utils import timezone
 from rest_framework.response import Response
 
+from .constants import API_VERSION
+
 
 def success_response(
     *,
@@ -15,7 +17,7 @@ def success_response(
             'data': data,
             'meta': {
                 'request_id': request_id,
-                'api_version': 'v1',
+                'api_version': API_VERSION,
                 'timestamp': timezone.now().isoformat(),
             },
         },
