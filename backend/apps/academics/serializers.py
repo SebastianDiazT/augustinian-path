@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Faculty
+from .models import Faculty, ProfessionalSchool
 
 
 class FacultySerializer(serializers.ModelSerializer):
@@ -19,7 +19,7 @@ class FacultySerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
-class FacultyPaginationSerializer(serializers.Serializer):
+class AcademicPaginationSerializer(serializers.Serializer):
     page = serializers.IntegerField()
     page_size = serializers.IntegerField()
     total_items = serializers.IntegerField()
@@ -30,4 +30,50 @@ class FacultyPaginationSerializer(serializers.Serializer):
 
 class FacultyListDataSerializer(serializers.Serializer):
     faculties = FacultySerializer(many=True)
-    pagination = FacultyPaginationSerializer()
+    pagination = AcademicPaginationSerializer()
+
+
+class FacultyReferenceSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+
+    class Meta:
+        model = Faculty
+        fields = [
+            'id',
+            'name',
+        ]
+        read_only_fields = fields
+
+
+class ProfessionalSchoolSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    faculty = FacultyReferenceSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = ProfessionalSchool
+        fields = [
+            'id',
+            'faculty',
+            'name',
+            'is_active',
+        ]
+        read_only_fields = fields
+
+
+class ProfessionalSchoolListDataSerializer(
+    serializers.Serializer,
+):
+    professional_schools = ProfessionalSchoolSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
