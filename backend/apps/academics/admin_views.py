@@ -169,10 +169,15 @@ class PlatformAdminProfessionalSchoolDetailView(
         summary='Actualizar una escuela profesional',
         tags=['Administración académica'],
         request=ProfessionalSchoolWriteSerializer,
-        responses=success_response_schema(
-            component_name='PlatformAdminProfessionalSchoolSuccessResponse',
-            data_serializer=ProfessionalSchoolSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminProfessionalSchoolSuccessResponse',
+                data_serializer=ProfessionalSchoolSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
+        },
     )
     def patch(
         self,
@@ -296,10 +301,14 @@ class PlatformAdminProfessionalSchoolListView(APIView):
                 description=('Cantidad de escuelas por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminProfessionalSchoolListSuccessResponse',
-            data_serializer=ProfessionalSchoolListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminProfessionalSchoolListSuccessResponse',
+                data_serializer=ProfessionalSchoolListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         school_filter = ProfessionalSchoolFilter(
@@ -343,6 +352,8 @@ class PlatformAdminProfessionalSchoolListView(APIView):
                 component_name='PlatformAdminProfessionalSchoolSuccessResponse',
                 data_serializer=ProfessionalSchoolSerializer,
             ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
         },
     )
     def post(self, request: Request) -> Response:
