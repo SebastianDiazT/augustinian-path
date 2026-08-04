@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .admin_views import (
+    PlatformAdminCourseDetailView,
     PlatformAdminCourseListView,
     PlatformAdminCurriculumCourseListView,
     PlatformAdminCurriculumPlanDetailView,
@@ -48,6 +49,11 @@ urlpatterns = [
         'courses/',
         PlatformAdminCourseListView.as_view(),
         name='course-list',
+    ),
+    path(
+        'courses/<uuid:course_id>/',
+        PlatformAdminCourseDetailView.as_view(),
+        name='course-detail',
     ),
     path(
         'curriculum-courses/',

@@ -34,6 +34,7 @@ from .models import (
 from .serializers import (
     CourseListDataSerializer,
     CourseSerializer,
+    CourseWriteSerializer,
     CurriculumCourseListDataSerializer,
     CurriculumCourseSerializer,
     CurriculumPlanListDataSerializer,
@@ -555,6 +556,68 @@ class PlatformAdminCourseListView(APIView):
                 'courses': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear una asignatura',
+        tags=['Administración académica'],
+        request=CourseWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: CourseSerializer,
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = CourseWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        course = serializer.save()
+
+        return success_response(
+            data=CourseSerializer(course).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class PlatformAdminCourseDetailView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar una asignatura',
+        tags=['Administración académica'],
+        request=CourseWriteSerializer,
+        responses=CourseSerializer,
+    )
+    def patch(
+        self,
+        request: Request,
+        course_id: UUID,
+    ) -> Response:
+        course = get_object_or_404(
+            Course.objects.select_related(
+                'professional_school',
+                'professional_school__faculty',
+            ),
+            public_id=course_id,
+        )
+
+        serializer = CourseWriteSerializer(
+            course,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_course = serializer.save()
+
+        return success_response(
+            data=CourseSerializer(updated_course).data,
             request_id=request.request_id,
         )
 
