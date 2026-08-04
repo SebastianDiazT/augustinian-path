@@ -396,7 +396,10 @@ class PlatformAdminCurriculumPlanListView(APIView):
                 description=('Cantidad de planes por página. Máximo: 100.'),
             ),
         ],
-        responses=CurriculumPlanListDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminCurriculumPlanListSuccessResponse',
+            data_serializer=CurriculumPlanListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         plan_filter = CurriculumPlanFilter(
@@ -437,7 +440,10 @@ class PlatformAdminCurriculumPlanListView(APIView):
         tags=['Administración académica'],
         request=CurriculumPlanWriteSerializer,
         responses={
-            status.HTTP_201_CREATED: CurriculumPlanSerializer,
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name='PlatformAdminCurriculumPlanSuccessResponse',
+                data_serializer=CurriculumPlanSerializer,
+            ),
         },
     )
     def post(self, request: Request) -> Response:
@@ -465,7 +471,10 @@ class PlatformAdminCurriculumPlanDetailView(APIView):
         summary='Actualizar un plan de estudios',
         tags=['Administración académica'],
         request=CurriculumPlanWriteSerializer,
-        responses=CurriculumPlanSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminCurriculumPlanSuccessResponse',
+            data_serializer=CurriculumPlanSerializer,
+        ),
     )
     def patch(
         self,
