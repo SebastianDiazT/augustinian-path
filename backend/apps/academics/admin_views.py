@@ -419,10 +419,14 @@ class PlatformAdminCurriculumPlanListView(APIView):
                 description=('Cantidad de planes por página. Máximo: 100.'),
             ),
         ],
-        responses=success_response_schema(
-            component_name='PlatformAdminCurriculumPlanListSuccessResponse',
-            data_serializer=CurriculumPlanListDataSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCurriculumPlanListSuccessResponse',
+                data_serializer=CurriculumPlanListDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+        },
     )
     def get(self, request: Request) -> Response:
         plan_filter = CurriculumPlanFilter(
@@ -467,6 +471,8 @@ class PlatformAdminCurriculumPlanListView(APIView):
                 component_name='PlatformAdminCurriculumPlanSuccessResponse',
                 data_serializer=CurriculumPlanSerializer,
             ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
         },
     )
     def post(self, request: Request) -> Response:
@@ -494,10 +500,15 @@ class PlatformAdminCurriculumPlanDetailView(APIView):
         summary='Actualizar un plan de estudios',
         tags=['Administración académica'],
         request=CurriculumPlanWriteSerializer,
-        responses=success_response_schema(
-            component_name='PlatformAdminCurriculumPlanSuccessResponse',
-            data_serializer=CurriculumPlanSerializer,
-        ),
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='PlatformAdminCurriculumPlanSuccessResponse',
+                data_serializer=CurriculumPlanSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
+            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
+        },
     )
     def patch(
         self,
