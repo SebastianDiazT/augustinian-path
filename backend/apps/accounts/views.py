@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.openapi import success_response_schema
 from apps.core.responses import success_response
 
 from .serializers import (
@@ -22,7 +23,10 @@ class CurrentUserView(APIView):
     @extend_schema(
         summary='Obtener el usuario autenticado',
         tags=['Autenticación'],
-        responses=CurrentUserSerializer,
+        responses=success_response_schema(
+            component_name='CurrentUserSuccessResponse',
+            data_serializer=CurrentUserSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         serializer = CurrentUserSerializer(request.user)
@@ -41,7 +45,10 @@ class CSRFView(APIView):
     @extend_schema(
         summary='Establecer la cookie CSRF',
         tags=['Autenticación'],
-        responses=CSRFDataSerializer,
+        responses=success_response_schema(
+            component_name='CsrfSuccessResponse',
+            data_serializer=CSRFDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         return success_response(
@@ -59,7 +66,10 @@ class LogoutView(APIView):
         summary='Cerrar la sesión actual',
         tags=['Autenticación'],
         request=None,
-        responses=LogoutDataSerializer,
+        responses=success_response_schema(
+            component_name='LogoutSuccessResponse',
+            data_serializer=LogoutDataSerializer,
+        ),
     )
     def post(self, request: Request) -> Response:
         logout(request)

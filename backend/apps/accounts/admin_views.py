@@ -7,6 +7,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 
@@ -30,7 +31,10 @@ class PlatformAdminAccessView(APIView):
     @extend_schema(
         summary='Comprobar acceso administrativo',
         tags=['Administración'],
-        responses=PlatformAdminAccessDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminAccessSuccessResponse',
+            data_serializer=PlatformAdminAccessDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         return success_response(
@@ -88,7 +92,10 @@ class PlatformAdminUserListView(APIView):
                 description=('Cantidad de usuarios por página. Máximo: 100.'),
             ),
         ],
-        responses=PlatformAdminUserListDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminUserListSuccessResponse',
+            data_serializer=PlatformAdminUserListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         users = User.objects.prefetch_related(
