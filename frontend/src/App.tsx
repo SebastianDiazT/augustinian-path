@@ -1,9 +1,12 @@
 import { ThemeSelector } from './theme/theme-selector';
 
+import { SessionStatus } from './features/auth/components/session-status';
+
 function App() {
     return (
         <main className='min-h-screen bg-background px-6 py-10 text-foreground transition-colors'>
             <div className='mx-auto max-w-5xl'>
+                <SessionStatus />
                 <header className='flex flex-wrap items-center justify-between gap-6'>
                     <div>
                         <p className='mb-2 text-xs font-bold uppercase tracking-[0.16em] text-primary'>
@@ -43,6 +46,7 @@ function App() {
                         </div>
                     </div>
                 </section>
+                
             </div>
         </main>
     );
