@@ -21,6 +21,41 @@ wheels = [
 ]
 
 [[package]]
+name = "augustinian-path-backend"
+version = "0.1.0"
+source = { virtual = "." }
+dependencies = [
+    { name = "django" },
+    { name = "django-allauth", extra = ["headless", "socialaccount"] },
+    { name = "django-cors-headers" },
+    { name = "django-environ" },
+    { name = "django-filter" },
+    { name = "djangorestframework" },
+    { name = "drf-spectacular" },
+    { name = "psycopg", extra = ["binary"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "django", specifier = ">=5.2.8,<5.3" },
+    { name = "django-allauth", extras = ["headless", "socialaccount"], specifier = ">=65.18.0" },
+    { name = "django-cors-headers", specifier = ">=4.9.0" },
+    { name = "django-environ", specifier = ">=0.14.0" },
+    { name = "django-filter", specifier = ">=26.1" },
+    { name = "djangorestframework", specifier = ">=3.17.1" },
+    { name = "drf-spectacular", specifier = ">=0.30.0" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.3,<4" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "ruff", specifier = ">=0.16.1" }]
+
+[[package]]
 name = "certifi"
 version = "2026.7.22"
 source = { registry = "https://pypi.org/simple" }
@@ -476,41 +511,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/d4/35/e57fd9fb5d423961df087a00b12d42c0a830288dc2f3b45ecca299158b4f/ruff-0.16.1-py3-none-win_amd64.whl", hash = "sha256:09b05e8b90c2cb06ad63464350e7a45e8e44a2dfe52072ebfba6666ca8d3f596", size = 11961111, upload-time = "2026-07-30T19:36:56.107Z" },
     { url = "https://files.pythonhosted.org/packages/cb/46/240ea004bf6dc4feb40e9832f2205a476a47dd5b8a3f8211a5fc5f95e20e/ruff-0.16.1-py3-none-win_arm64.whl", hash = "sha256:dbaadaac38c70239f056d306b7476f246b0bf000fa6b3876402acbf5b227eaf8", size = 11309414, upload-time = "2026-07-30T19:36:58.79Z" },
 ]
-
-[[package]]
-name = "ruta-unsa-backend"
-version = "0.1.0"
-source = { virtual = "." }
-dependencies = [
-    { name = "django" },
-    { name = "django-allauth", extra = ["headless", "socialaccount"] },
-    { name = "django-cors-headers" },
-    { name = "django-environ" },
-    { name = "django-filter" },
-    { name = "djangorestframework" },
-    { name = "drf-spectacular" },
-    { name = "psycopg", extra = ["binary"] },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "django", specifier = ">=5.2.8,<5.3" },
-    { name = "django-allauth", extras = ["headless", "socialaccount"], specifier = ">=65.18.0" },
-    { name = "django-cors-headers", specifier = ">=4.9.0" },
-    { name = "django-environ", specifier = ">=0.14.0" },
-    { name = "django-filter", specifier = ">=26.1" },
-    { name = "djangorestframework", specifier = ">=3.17.1" },
-    { name = "drf-spectacular", specifier = ">=0.30.0" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.3,<4" },
-]
-
-[package.metadata.requires-dev]
-dev = [{ name = "ruff", specifier = ">=0.16.1" }]
 
 [[package]]
 name = "sqlparse"

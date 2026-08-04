@@ -35,7 +35,7 @@ def api_exception_handler(
     problem_code = str(getattr(exc, 'default_code', 'api_error')).replace('_', '-')
 
     error: dict[str, Any] = {
-        'type': f'urn:ruta-unsa:problem:{problem_code}',
+        'type': f'urn:augustinian-path:problem:{problem_code}',
         'title': ERROR_TITLES.get(
             response.status_code,
             'Error de la API',

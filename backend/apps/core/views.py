@@ -25,7 +25,7 @@ class HealthView(APIView):
         return success_response(
             data={
                 'status': 'ok',
-                'service': 'ruta-unsa-backend',
+                'service': 'augustinian-path-backend',
             },
             request_id=request.request_id,
         )

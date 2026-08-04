@@ -210,7 +210,7 @@ REST_FRAMEWORK = {
 }
 
 SPECTACULAR_SETTINGS = {
-    'TITLE': 'Ruta UNSA API',
+    'TITLE': 'Ruta Agustina API',
     'DESCRIPTION': (
         'API para la planificación académica y generación inteligente de horarios.'
     ),

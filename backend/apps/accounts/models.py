@@ -9,7 +9,7 @@ from .validators import validate_institutional_email
 
 
 class User(AbstractUser):
-    """Usuario de Ruta UNSA identificado mediante correo electrónico."""
+    """Usuario de Ruta Agustina  identificado mediante correo electrónico."""
 
     username = None
 

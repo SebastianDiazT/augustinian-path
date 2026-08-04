@@ -19,7 +19,7 @@ class HealthEndpointTests(APITestCase):
             body['data'],
             {
                 'status': 'ok',
-                'service': 'ruta-unsa-backend',
+                'service': 'augustinian-path-backend',
             },
         )
 
@@ -68,7 +68,7 @@ class HealthEndpointTests(APITestCase):
 
         self.assertEqual(
             body['error']['type'],
-            'urn:ruta-unsa:problem:method-not-allowed',
+            'urn:augustinian-path:problem:method-not-allowed',
         )
         self.assertEqual(
             body['error']['title'],
