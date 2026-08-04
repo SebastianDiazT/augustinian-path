@@ -132,6 +132,15 @@ class FacultyReferenceSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class FacultyCatalogListDataSerializer(
+    serializers.Serializer,
+):
+    faculties = FacultyReferenceSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
 class ProfessionalSchoolSerializer(
     serializers.ModelSerializer,
 ):

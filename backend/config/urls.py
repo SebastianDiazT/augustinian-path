@@ -26,6 +26,10 @@ urlpatterns = [
         include('apps.academics.admin_urls'),
     ),
     path(
+        'api/v1/academics/',
+        include('apps.academics.urls'),
+    ),
+    path(
         'accounts/',
         include('allauth.urls'),
     ),
