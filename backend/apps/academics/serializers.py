@@ -643,6 +643,139 @@ class CurriculumCourseSerializer(
         read_only_fields = fields
 
 
+class CurriculumCourseWriteSerializer(
+    serializers.ModelSerializer,
+):
+    curriculum_plan_id = serializers.SlugRelatedField(
+        source='curriculum_plan',
+        slug_field='public_id',
+        queryset=CurriculumPlan.objects.all(),
+        write_only=True,
+    )
+    course_id = serializers.SlugRelatedField(
+        source='course',
+        slug_field='public_id',
+        queryset=Course.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = CurriculumCourse
+        fields = [
+            'curriculum_plan_id',
+            'course_id',
+            'cycle',
+            'credits',
+        ]
+        validators = []
+
+    def validate(
+        self,
+        attrs: dict[str, object],
+    ) -> dict[str, object]:
+        if self.partial and not attrs:
+            raise serializers.ValidationError('Debes proporcionar al menos un campo.')
+
+        curriculum_plan = attrs.get('curriculum_plan')
+        course = attrs.get('course')
+
+        if self.instance is not None:
+            current_plan = self.instance.curriculum_plan
+            current_course = self.instance.course
+
+            immutable_errors = {}
+
+            if (
+                isinstance(curriculum_plan, CurriculumPlan)
+                and curriculum_plan.pk != current_plan.pk
+            ):
+                immutable_errors['curriculum_plan_id'] = (
+                    'No se puede cambiar el plan de estudios '
+                    'de una asignatura ya vinculada.'
+                )
+
+            if isinstance(course, Course) and course.pk != current_course.pk:
+                immutable_errors['course_id'] = (
+                    'No se puede cambiar la asignatura de un registro existente.'
+                )
+
+            if immutable_errors:
+                raise serializers.ValidationError(immutable_errors)
+
+            curriculum_plan = current_plan
+            course = current_course
+
+        if isinstance(curriculum_plan, CurriculumPlan) and isinstance(course, Course):
+            if curriculum_plan.professional_school_id != course.professional_school_id:
+                raise serializers.ValidationError(
+                    {
+                        'course_id': (
+                            'La asignatura y el plan de estudios '
+                            'deben pertenecer a la misma escuela '
+                            'profesional.'
+                        ),
+                    }
+                )
+
+            existing_entries = CurriculumCourse.objects.filter(
+                curriculum_plan=curriculum_plan,
+                course=course,
+            )
+
+            if self.instance is not None:
+                existing_entries = existing_entries.exclude(
+                    pk=self.instance.pk,
+                )
+
+            if existing_entries.exists():
+                raise serializers.ValidationError(
+                    {
+                        'course_id': (
+                            'La asignatura ya pertenece al plan '
+                            'de estudios seleccionado.'
+                        ),
+                    }
+                )
+
+        return attrs
+
+    def create(
+        self,
+        validated_data: dict[str, object],
+    ) -> CurriculumCourse:
+        try:
+            with transaction.atomic():
+                return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'course_id': (
+                        'La asignatura ya pertenece al plan de estudios seleccionado.'
+                    ),
+                }
+            ) from error
+
+    def update(
+        self,
+        instance: CurriculumCourse,
+        validated_data: dict[str, object],
+    ) -> CurriculumCourse:
+        try:
+            with transaction.atomic():
+                return super().update(
+                    instance,
+                    validated_data,
+                )
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'course_id': (
+                        'La asignatura ya pertenece al plan de estudios seleccionado.'
+                    ),
+                }
+            ) from error
+
+
 class CurriculumCourseListDataSerializer(
     serializers.Serializer,
 ):

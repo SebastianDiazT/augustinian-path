@@ -277,10 +277,10 @@ class PlatformAdminCurriculumCourseListTests(
             response.json()['error']['errors'],
         )
 
-    def test_rejects_write_requests(self) -> None:
+    def test_rejects_put_requests(self) -> None:
         self.client.force_authenticate(user=self.admin)
 
-        response = self.client.post(
+        response = self.client.put(
             self.endpoint,
             {},
             format='json',

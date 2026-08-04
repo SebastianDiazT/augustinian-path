@@ -37,6 +37,7 @@ from .serializers import (
     CourseWriteSerializer,
     CurriculumCourseListDataSerializer,
     CurriculumCourseSerializer,
+    CurriculumCourseWriteSerializer,
     CurriculumPlanListDataSerializer,
     CurriculumPlanSerializer,
     CurriculumPlanWriteSerializer,
@@ -712,5 +713,75 @@ class PlatformAdminCurriculumCourseListView(APIView):
                 'curriculum_courses': serializer.data,
                 'pagination': paginator.get_metadata(),
             },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Agregar una asignatura a un plan de estudios',
+        tags=['Administración académica'],
+        request=CurriculumCourseWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: CurriculumCourseSerializer,
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = CurriculumCourseWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        curriculum_course = serializer.save()
+
+        return success_response(
+            data=CurriculumCourseSerializer(
+                curriculum_course,
+            ).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class PlatformAdminCurriculumCourseDetailView(
+    APIView,
+):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar una asignatura de un plan',
+        tags=['Administración académica'],
+        request=CurriculumCourseWriteSerializer,
+        responses=CurriculumCourseSerializer,
+    )
+    def patch(
+        self,
+        request: Request,
+        curriculum_course_id: UUID,
+    ) -> Response:
+        curriculum_course = get_object_or_404(
+            CurriculumCourse.objects.select_related(
+                'curriculum_plan',
+                'curriculum_plan__professional_school',
+                'curriculum_plan__professional_school__faculty',
+                'course',
+            ),
+            public_id=curriculum_course_id,
+        )
+
+        serializer = CurriculumCourseWriteSerializer(
+            curriculum_course,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_curriculum_course = serializer.save()
+
+        return success_response(
+            data=CurriculumCourseSerializer(
+                updated_curriculum_course,
+            ).data,
             request_id=request.request_id,
         )
