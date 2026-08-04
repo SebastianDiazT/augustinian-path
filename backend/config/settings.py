@@ -128,17 +128,34 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
+DATABASE_URL = env(
+    'DATABASE_URL',
+    default='',
+)
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env('POSTGRES_DB'),
-        'USER': env('POSTGRES_USER'),
-        'PASSWORD': env('POSTGRES_PASSWORD'),
-        'HOST': env('POSTGRES_HOST', default='localhost'),
-        'PORT': env.int('POSTGRES_PORT', default=5432),
+if DATABASE_URL:
+    DATABASES = {
+        'default': env.db_url_config(
+            DATABASE_URL,
+        ),
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            'NAME': env('POSTGRES_DB'),
+            'USER': env('POSTGRES_USER'),
+            'PASSWORD': env('POSTGRES_PASSWORD'),
+            'HOST': env(
+                'POSTGRES_HOST',
+                default='localhost',
+            ),
+            'PORT': env.int(
+                'POSTGRES_PORT',
+                default=5432,
+            ),
+        }
+    }
 
 REDIS_URL = env(
     'REDIS_URL',
