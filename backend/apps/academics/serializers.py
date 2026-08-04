@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from .models import Faculty, ProfessionalSchool
+from .models import (
+    CurriculumPlan,
+    Faculty,
+    ProfessionalSchool,
+)
 
 
 class FacultySerializer(serializers.ModelSerializer):
@@ -74,6 +78,38 @@ class ProfessionalSchoolListDataSerializer(
     serializers.Serializer,
 ):
     professional_schools = ProfessionalSchoolSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
+class CurriculumPlanSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    professional_school = ProfessionalSchoolSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = CurriculumPlan
+        fields = [
+            'id',
+            'professional_school',
+            'code',
+            'name',
+            'is_active',
+        ]
+        read_only_fields = fields
+
+
+class CurriculumPlanListDataSerializer(
+    serializers.Serializer,
+):
+    curriculum_plans = CurriculumPlanSerializer(
         many=True,
     )
     pagination = AcademicPaginationSerializer()
