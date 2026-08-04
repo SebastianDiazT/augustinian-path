@@ -4,6 +4,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from .openapi import success_response_schema
 from .responses import success_response
 from .serializers import HealthResponseSerializer
 
@@ -15,7 +16,10 @@ class HealthView(APIView):
     @extend_schema(
         summary='Comprobar el estado de la API',
         tags=['Sistema'],
-        responses=HealthResponseSerializer,
+        responses=success_response_schema(
+            component_name='HealthSuccessResponse',
+            data_serializer=HealthResponseSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         return success_response(

@@ -12,6 +12,12 @@ class HealthDataSerializer(serializers.Serializer):
     service = serializers.CharField()
 
 
+class ApiMetaSerializer(serializers.Serializer):
+    request_id = serializers.UUIDField()
+    api_version = serializers.CharField()
+    timestamp = serializers.DateTimeField()
+
+
 class HealthResponseSerializer(serializers.Serializer):
     data = HealthDataSerializer()
     meta = ResponseMetaSerializer()
