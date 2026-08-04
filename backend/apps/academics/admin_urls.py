@@ -6,6 +6,7 @@ from .admin_views import (
     PlatformAdminCurriculumPlanListView,
     PlatformAdminFacultyDetailView,
     PlatformAdminFacultyListView,
+    PlatformAdminProfessionalSchoolDetailView,
     PlatformAdminProfessionalSchoolListView,
 )
 
@@ -18,9 +19,19 @@ urlpatterns = [
         name='faculty-list',
     ),
     path(
+        'faculties/<uuid:faculty_id>/',
+        PlatformAdminFacultyDetailView.as_view(),
+        name='faculty-detail',
+    ),
+    path(
         'professional-schools/',
         PlatformAdminProfessionalSchoolListView.as_view(),
         name='professional-school-list',
+    ),
+    path(
+        'professional-schools/<uuid:school_id>/',
+        PlatformAdminProfessionalSchoolDetailView.as_view(),
+        name='professional-school-detail',
     ),
     path(
         'curriculum-plans/',
@@ -36,10 +47,5 @@ urlpatterns = [
         'curriculum-courses/',
         PlatformAdminCurriculumCourseListView.as_view(),
         name='curriculum-course-list',
-    ),
-    path(
-        'faculties/<uuid:faculty_id>/',
-        PlatformAdminFacultyDetailView.as_view(),
-        name='faculty-detail',
     ),
 ]

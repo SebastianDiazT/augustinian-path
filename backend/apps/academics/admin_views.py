@@ -43,6 +43,7 @@ from .serializers import (
     FacultyWriteSerializer,
     ProfessionalSchoolListDataSerializer,
     ProfessionalSchoolSerializer,
+    ProfessionalSchoolWriteSerializer,
 )
 
 
@@ -136,6 +137,49 @@ class PlatformAdminFacultyListView(APIView):
             data=FacultySerializer(faculty).data,
             request_id=request.request_id,
             status_code=status.HTTP_201_CREATED,
+        )
+
+
+class PlatformAdminProfessionalSchoolDetailView(
+    APIView,
+):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar una escuela profesional',
+        tags=['Administración académica'],
+        request=ProfessionalSchoolWriteSerializer,
+        responses=ProfessionalSchoolSerializer,
+    )
+    def patch(
+        self,
+        request: Request,
+        school_id: UUID,
+    ) -> Response:
+        school = get_object_or_404(
+            ProfessionalSchool.objects.select_related(
+                'faculty',
+            ),
+            public_id=school_id,
+        )
+
+        serializer = ProfessionalSchoolWriteSerializer(
+            school,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        updated_school = serializer.save()
+
+        return success_response(
+            data=ProfessionalSchoolSerializer(
+                updated_school,
+            ).data,
+            request_id=request.request_id,
         )
 
 
@@ -257,6 +301,30 @@ class PlatformAdminProfessionalSchoolListView(APIView):
                 'pagination': paginator.get_metadata(),
             },
             request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear una escuela profesional',
+        tags=['Administración académica'],
+        request=ProfessionalSchoolWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: (ProfessionalSchoolSerializer),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = ProfessionalSchoolWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(raise_exception=True)
+
+        school = serializer.save()
+
+        return success_response(
+            data=ProfessionalSchoolSerializer(
+                school,
+            ).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
         )
 
 

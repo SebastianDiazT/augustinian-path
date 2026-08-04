@@ -154,6 +154,119 @@ class ProfessionalSchoolSerializer(
         read_only_fields = fields
 
 
+class ProfessionalSchoolWriteSerializer(
+    serializers.ModelSerializer,
+):
+    faculty_id = serializers.SlugRelatedField(
+        source='faculty',
+        slug_field='public_id',
+        queryset=Faculty.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = ProfessionalSchool
+        fields = [
+            'faculty_id',
+            'name',
+            'is_active',
+        ]
+        extra_kwargs = {
+            'is_active': {
+                'required': False,
+            },
+        }
+
+    def validate_name(self, value: str) -> str:
+        normalized_name = ' '.join(value.split())
+
+        if not normalized_name:
+            raise serializers.ValidationError('El nombre de la escuela es obligatorio.')
+
+        return normalized_name
+
+    def validate(
+        self,
+        attrs: dict[str, object],
+    ) -> dict[str, object]:
+        if self.partial and not attrs:
+            raise serializers.ValidationError('Debes proporcionar al menos un campo.')
+
+        faculty = attrs.get('faculty')
+        name = attrs.get('name')
+
+        if self.instance is not None:
+            if faculty is None:
+                faculty = self.instance.faculty
+
+            if name is None:
+                name = self.instance.name
+
+        if isinstance(faculty, Faculty) and isinstance(name, str):
+            existing_schools = ProfessionalSchool.objects.filter(
+                faculty=faculty,
+                name__iexact=name,
+            )
+
+            if self.instance is not None:
+                existing_schools = existing_schools.exclude(
+                    pk=self.instance.pk,
+                )
+
+            if existing_schools.exists():
+                raise serializers.ValidationError(
+                    {
+                        'name': (
+                            'Ya existe una escuela profesional '
+                            'con este nombre en la facultad '
+                            'seleccionada.'
+                        ),
+                    }
+                )
+
+        return attrs
+
+    def create(
+        self,
+        validated_data: dict[str, object],
+    ) -> ProfessionalSchool:
+        try:
+            with transaction.atomic():
+                return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'name': (
+                        'Ya existe una escuela profesional '
+                        'con este nombre en la facultad '
+                        'seleccionada.'
+                    ),
+                }
+            ) from error
+
+    def update(
+        self,
+        instance: ProfessionalSchool,
+        validated_data: dict[str, object],
+    ) -> ProfessionalSchool:
+        try:
+            with transaction.atomic():
+                return super().update(
+                    instance,
+                    validated_data,
+                )
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'name': (
+                        'Ya existe una escuela profesional '
+                        'con este nombre en la facultad '
+                        'seleccionada.'
+                    ),
+                }
+            ) from error
+
+
 class ProfessionalSchoolListDataSerializer(
     serializers.Serializer,
 ):
