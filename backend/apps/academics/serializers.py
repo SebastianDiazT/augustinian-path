@@ -163,6 +163,36 @@ class ProfessionalSchoolSerializer(
         read_only_fields = fields
 
 
+class ProfessionalSchoolCatalogSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    faculty = FacultyReferenceSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = ProfessionalSchool
+        fields = [
+            'id',
+            'faculty',
+            'name',
+        ]
+        read_only_fields = fields
+
+
+class ProfessionalSchoolCatalogListDataSerializer(
+    serializers.Serializer,
+):
+    professional_schools = ProfessionalSchoolCatalogSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
 class ProfessionalSchoolWriteSerializer(
     serializers.ModelSerializer,
 ):
