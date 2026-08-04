@@ -98,6 +98,7 @@ class PlatformAdminFacultyListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -308,6 +309,7 @@ class PlatformAdminProfessionalSchoolListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -426,6 +428,7 @@ class PlatformAdminCurriculumPlanListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -593,6 +596,7 @@ class PlatformAdminCourseListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -767,6 +771,7 @@ class PlatformAdminCurriculumCourseListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:

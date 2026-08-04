@@ -163,3 +163,20 @@ class PlatformAdminFacultyListEndpointTests(APITestCase):
             status.HTTP_405_METHOD_NOT_ALLOWED,
         )
         self.assertIn('error', response.json())
+
+    def test_rejects_page_out_of_range(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.get(
+            f'{self.endpoint}?page=999',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertEqual(
+            response.json()['error']['status'],
+            status.HTTP_404_NOT_FOUND,
+        )
+        self.assertIn('meta', response.json())

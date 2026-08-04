@@ -81,6 +81,7 @@ class FacultyCatalogListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -160,6 +161,7 @@ class ProfessionalSchoolCatalogListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -244,6 +246,7 @@ class CurriculumPlanCatalogListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -330,6 +333,7 @@ class CourseCatalogListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
@@ -423,6 +427,7 @@ class CurriculumCourseCatalogListView(APIView):
             ),
             status.HTTP_400_BAD_REQUEST: ApiErrorResponseSerializer,
             status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_404_NOT_FOUND: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
