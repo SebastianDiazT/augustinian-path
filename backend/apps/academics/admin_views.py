@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from apps.accounts.permissions import IsPlatformAdmin
+from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 
@@ -89,7 +90,10 @@ class PlatformAdminFacultyListView(APIView):
                 description=('Cantidad de facultades por página. Máximo: 100.'),
             ),
         ],
-        responses=FacultyListDataSerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminFacultyListSuccessResponse',
+            data_serializer=FacultyListDataSerializer,
+        ),
     )
     def get(self, request: Request) -> Response:
         faculty_filter = FacultyFilter(
@@ -125,7 +129,10 @@ class PlatformAdminFacultyListView(APIView):
         tags=['Administración académica'],
         request=FacultyWriteSerializer,
         responses={
-            status.HTTP_201_CREATED: FacultySerializer,
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name='PlatformAdminFacultySuccessResponse',
+                data_serializer=FacultySerializer,
+            ),
         },
     )
     def post(self, request: Request) -> Response:
@@ -196,7 +203,10 @@ class PlatformAdminFacultyDetailView(APIView):
         summary='Actualizar una facultad de la UNSA',
         tags=['Administración académica'],
         request=FacultyWriteSerializer,
-        responses=FacultySerializer,
+        responses=success_response_schema(
+            component_name='PlatformAdminFacultySuccessResponse',
+            data_serializer=FacultySerializer,
+        ),
     )
     def patch(
         self,

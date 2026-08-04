@@ -1,9 +1,12 @@
+from functools import cache
+
 from drf_spectacular.utils import extend_schema_serializer
 from rest_framework import serializers
 
 from .serializers import ApiMetaSerializer
 
 
+@cache
 def success_response_schema(
     *,
     component_name: str,
