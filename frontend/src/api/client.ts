@@ -43,13 +43,18 @@ export async function apiRequest<T>(
     });
 
     const contentType = response.headers.get('content-type');
-    const payload: unknown = contentType?.includes('application/json')
-        ? await response.json()
-        : null;
+
+    const isJsonResponse = contentType?.includes('application/json') ?? false;
 
     if (!response.ok) {
-        throw new ApiError(response.status, payload);
+        const errorPayload: unknown = isJsonResponse ? await response.json() : null;
+
+        throw new ApiError(response.status, errorPayload);
     }
 
-    return payload as T;
+    if (!isJsonResponse) {
+        return null as T;
+    }
+
+    return (await response.json()) as T;
 }

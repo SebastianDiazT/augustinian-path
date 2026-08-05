@@ -1,5 +1,6 @@
 import type { UserRole } from '@/api/auth';
 import { useCurrentUser } from '@/features/auth/use-current-user';
+import { GoogleLoginButton } from '@/features/auth/components/google-login-button';
 
 const containerClasses =
     'mt-6 rounded-3xl border border-border ' + 'bg-surface p-8 shadow-card sm:p-10';
@@ -47,6 +48,7 @@ export function SessionStatus() {
                 <p className='mt-3 text-muted-foreground'>
                     Inicia sesión con tu cuenta institucional de la UNSA para continuar.
                 </p>
+                <GoogleLoginButton />
             </section>
         );
     }
@@ -62,7 +64,7 @@ export function SessionStatus() {
             <h2 className='mt-3 font-display text-2xl font-bold tracking-tight text-foreground'>
                 {user.first_name
                     ? `Bienvenido, ${user.first_name}`
-                    : 'Bienvenido a Ruta UNSA'}
+                    : 'Bienvenido a Ruta Agustina'}
             </h2>
 
             <p className='mt-2 text-muted-foreground'>{user.email}</p>
