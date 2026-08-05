@@ -3,7 +3,7 @@ import type { PropsWithChildren } from 'react';
 
 import { ThemeContext, type ResolvedTheme, type Theme } from '@/theme/theme-context';
 
-const STORAGE_KEY = 'ruta-unsa-theme';
+const STORAGE_KEY = 'ruta-agustina-theme';
 
 function getStoredTheme(): Theme {
     const storedTheme = window.localStorage.getItem(STORAGE_KEY);
