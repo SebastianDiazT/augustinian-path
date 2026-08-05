@@ -224,6 +224,15 @@ SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 HEADLESS_ONLY = True
 HEADLESS_CLIENTS = ('browser',)
 
+FRONTEND_URL = env(
+    'FRONTEND_URL',
+    default='http://localhost:5173',
+).rstrip('/')
+
+HEADLESS_FRONTEND_URLS = {
+    'socialaccount_login_error': FRONTEND_URL,
+}
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APPS': [
