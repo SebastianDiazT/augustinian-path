@@ -10,6 +10,7 @@
     --app-primary-hover: #650019;
     --app-primary-foreground: #ffffff;
     --app-accent: #c8a24a;
+    --app-accent-hover: #a88536;
     --app-accent-foreground: #352906;
     --app-border: #d9d6d2;
     --app-ring: #9f2044;
@@ -28,10 +29,11 @@
     --app-primary-hover: #d04a67;
     --app-primary-foreground: #ffffff;
     --app-accent: #d8b75e;
+    --app-accent-hover: #e8cc85;
     --app-accent-foreground: #211a1d;
     --app-border: #40363a;
-    --app-ring: #d8b75e;
-    --app-card-shadow: 0 1.5rem 4.5rem rgb(0 0 0 / 35%);
+    --app-ring: #bd3655;
+    --app-card-shadow: 0 1rem 3rem rgb(0 0 0 / 50%);
 }
 
 @theme inline {
@@ -44,6 +46,7 @@
     --color-primary-hover: var(--app-primary-hover);
     --color-primary-foreground: var(--app-primary-foreground);
     --color-accent: var(--app-accent);
+    --color-accent-hover: var(--app-accent-hover);
     --color-accent-foreground: var(--app-accent-foreground);
     --color-border: var(--app-border);
     --color-ring: var(--app-ring);

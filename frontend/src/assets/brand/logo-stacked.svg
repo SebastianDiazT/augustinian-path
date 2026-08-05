@@ -1,0 +1,26 @@
+<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 250' width='100%' height='100%' preserveAspectRatio='xMidYMid meet' role='img' aria-labelledby='logo-title logo-description' shape-rendering='geometricPrecision'>
+  <title id='logo-title'>Ruta Agustina</title>
+  <desc id='logo-description'>Logo apilado de Ruta Agustina.</desc>
+  <style>
+    .route { fill: none; stroke: #800020; stroke-width: 10; }
+    .node { fill: none; stroke: #800020; stroke-width: 6; }
+    .node-accent { fill: none; stroke: #C8A24A; stroke-width: 6; }
+    .wordmark { font-family: Inter, Manrope, Montserrat, Arial, sans-serif; font-weight: 800; text-anchor: middle; letter-spacing: -1px; }
+    .primary { fill: #800020; font-size: 36px; }
+    .secondary { fill: #333333; font-size: 33px; }
+    .accent { stroke: #C8A24A; stroke-width: 4; stroke-linecap: round; }
+  </style>
+  <g id='isotype' transform='translate(70 15)'>
+    <path class='route' d='M 28 18 H 55 C 70 18, 78 26, 78 38 C 78 50, 70 58, 56 58 H 55'/>
+    <path class='route' d='M 36 58 C 28 58, 22 64, 22 74 V 95'/>
+    <path class='route' d='M 50 65 L 70 82'/>
+    <circle class='node' cx='20' cy='18' r='8'/>
+    <circle class='node' cx='77' cy='88' r='8'/>
+    <circle class='node-accent' cx='45' cy='58' r='8'/>
+</g>
+  <g id='wordmark'>
+    <text class='wordmark primary' x='120' y='157'>Ruta</text>
+    <text class='wordmark secondary' x='120' y='198'>Agustina</text>
+    <line class='accent' x1='93' y1='216' x2='147' y2='216'/>
+  </g>
+</svg>

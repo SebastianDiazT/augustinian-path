@@ -1,27 +1,64 @@
-import type { ChangeEvent } from 'react';
+import { Monitor, Moon, Sun, type LucideIcon } from 'lucide-react';
 
 import type { Theme } from '@/theme/theme-context';
 import { useTheme } from '@/theme/use-theme';
 
-export function ThemeSelector() {
-    const { theme, resolvedTheme, setTheme } = useTheme();
+interface ThemeOption {
+    value: Theme;
+    label: string;
+    icon: LucideIcon;
+}
 
-    const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
-        setTheme(event.target.value as Theme);
-    };
+const themeOptions: ThemeOption[] = [
+    {
+        value: 'light',
+        label: 'Tema claro',
+        icon: Sun,
+    },
+    {
+        value: 'dark',
+        label: 'Tema oscuro',
+        icon: Moon,
+    },
+    {
+        value: 'system',
+        label: 'Usar tema del sistema',
+        icon: Monitor,
+    },
+];
+
+export function ThemeSelector() {
+    const { theme, setTheme } = useTheme();
 
     return (
-        <label className='flex items-center gap-3 text-sm'>
-            <span className='text-muted-foreground'>Tema</span>
-            <select
-                className='rounded-xl border border-border bg-surface px-3 py-2 text-foreground shadow-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/20'
-                value={theme}
-                onChange={handleChange}
-            >
-                <option value='light'>Claro</option>
-                <option value='dark'>Oscuro</option>
-                <option value='system'>Sistema ({resolvedTheme})</option>
-            </select>
-        </label>
+        <div
+            className='inline-flex items-center rounded-xl border border-border bg-surface-muted p-1'
+            role='group'
+            aria-label='Seleccionar tema'
+        >
+            {themeOptions.map((option) => {
+                const Icon = option.icon;
+                const isSelected = theme === option.value;
+
+                return (
+                    <button
+                        key={option.value}
+                        type='button'
+                        className={
+                            'inline-flex size-9 items-center justify-center rounded-lg transition ' +
+                            (isSelected
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:bg-surface hover:text-foreground')
+                        }
+                        aria-label={option.label}
+                        aria-pressed={isSelected}
+                        title={option.label}
+                        onClick={() => setTheme(option.value)}
+                    >
+                        <Icon className='size-4' aria-hidden='true' />
+                    </button>
+                );
+            })}
+        </div>
     );
 }
