@@ -1,4 +1,5 @@
-import { apiRequest, type ApiSuccessResponse } from '@/api/client';
+import { apiRequest, type ApiSuccessResponse, ApiError } from '@/api/client';
+import { getCsrfToken } from '@/api/csrf';
 import { apiEndpoints } from '@/api/endpoints';
 
 export type UserRole = 'platform_admin' | 'student';
@@ -13,6 +14,10 @@ export interface CurrentUser {
 
 interface CsrfData {
     csrf_cookie_set: boolean;
+}
+
+interface LogoutData {
+    authenticated: false;
 }
 
 export async function ensureCsrfCookie(signal?: AbortSignal): Promise<void> {
@@ -32,4 +37,26 @@ export async function getCurrentUser(signal?: AbortSignal): Promise<CurrentUser>
     );
 
     return response.data;
+}
+
+export async function logoutCurrentUser(): Promise<void> {
+    await ensureCsrfCookie();
+
+    try {
+        await apiRequest<ApiSuccessResponse<LogoutData>>(apiEndpoints.auth.logout, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCsrfToken(),
+            },
+        });
+    } catch (error: unknown) {
+        if (
+            error instanceof ApiError &&
+            (error.status === 401 || error.status === 403)
+        ) {
+            return;
+        }
+
+        throw error;
+    }
 }

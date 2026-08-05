@@ -1,6 +1,7 @@
 import type { UserRole } from '@/api/auth';
 import { useCurrentUser } from '@/features/auth/use-current-user';
 import { GoogleLoginButton } from '@/features/auth/components/google-login-button';
+import { LogoutButton } from '@/features/auth/components/logout-button';
 
 const containerClasses =
     'mt-6 rounded-3xl border border-border ' + 'bg-surface p-8 shadow-card sm:p-10';
@@ -85,6 +86,7 @@ export function SessionStatus() {
                     </span>
                 )}
             </div>
+            <LogoutButton />
         </section>
     );
 }

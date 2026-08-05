@@ -1,23 +1,7 @@
 import { ensureCsrfCookie } from '@/api/auth';
 import { API_BASE_URL } from '@/api/client';
+import { getCsrfToken } from '@/api/csrf';
 import { apiEndpoints } from '@/api/endpoints';
-
-const csrfCookieName = 'csrftoken';
-
-function readCookie(name: string): string | null {
-    const prefix = `${name}=`;
-
-    const cookie = document.cookie
-        .split(';')
-        .map((part) => part.trim())
-        .find((part) => part.startsWith(prefix));
-
-    if (!cookie) {
-        return null;
-    }
-
-    return decodeURIComponent(cookie.slice(prefix.length));
-}
 
 function appendHiddenField(form: HTMLFormElement, name: string, value: string): void {
     const input = document.createElement('input');
@@ -32,11 +16,7 @@ function appendHiddenField(form: HTMLFormElement, name: string, value: string): 
 export async function startGoogleLogin(): Promise<void> {
     await ensureCsrfCookie();
 
-    const csrfToken = readCookie(csrfCookieName);
-
-    if (!csrfToken) {
-        throw new Error('No se pudo obtener el token CSRF.');
-    }
+    const csrfToken = getCsrfToken();
 
     const form = document.createElement('form');
 

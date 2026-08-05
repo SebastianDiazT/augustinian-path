@@ -9,6 +9,7 @@ export const apiEndpoints = {
     auth: {
         csrf: `${apiPrefix}/auth/csrf/`,
         currentUser: `${apiPrefix}/auth/me/`,
+        logout: `${apiPrefix}/auth/logout/`,
     },
     headlessAuth: {
         providerRedirect:
