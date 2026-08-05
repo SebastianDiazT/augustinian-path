@@ -1,4 +1,5 @@
 import { apiRequest, type ApiSuccessResponse } from '@/api/client';
+import { apiEndpoints } from '@/api/endpoints';
 
 export type UserRole = 'platform_admin' | 'student';
 
@@ -12,7 +13,7 @@ export interface CurrentUser {
 
 export async function getCurrentUser(signal?: AbortSignal): Promise<CurrentUser> {
     const response = await apiRequest<ApiSuccessResponse<CurrentUser>>(
-        '/api/v1/auth/me/',
+        apiEndpoints.auth.currentUser,
         {
             method: 'GET',
             signal,
