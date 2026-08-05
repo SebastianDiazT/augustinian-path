@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 
-import { getCurrentUser } from '../../api/auth';
-import type { CurrentUser } from '../../api/auth';
-import { ApiError } from '../../api/client';
+import { getCurrentUser, type CurrentUser } from '@/api/auth';
+import { ApiError } from '@/api/client';
 
 export const currentUserQueryKey = ['auth', 'current-user'] as const;
 

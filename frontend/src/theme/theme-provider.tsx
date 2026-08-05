@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { PropsWithChildren } from 'react';
 
-import { ThemeContext, type ResolvedTheme, type Theme } from './theme-context';
+import { ThemeContext, type ResolvedTheme, type Theme } from '@/theme/theme-context';
 
 const STORAGE_KEY = 'ruta-unsa-theme';
 

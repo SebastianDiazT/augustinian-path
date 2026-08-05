@@ -1,7 +1,7 @@
 import type { ChangeEvent } from 'react';
 
-import type { Theme } from './theme-context';
-import { useTheme } from './use-theme';
+import type { Theme } from '@/theme/theme-context';
+import { useTheme } from '@/theme/use-theme';
 
 export function ThemeSelector() {
     const { theme, resolvedTheme, setTheme } = useTheme();

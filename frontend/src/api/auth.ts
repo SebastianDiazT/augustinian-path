@@ -1,5 +1,4 @@
-import { apiRequest } from './client';
-import type { ApiSuccessResponse } from './client';
+import { apiRequest, type ApiSuccessResponse } from '@/api/client';
 
 export type UserRole = 'platform_admin' | 'student';
 

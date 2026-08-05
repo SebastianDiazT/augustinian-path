@@ -1,5 +1,5 @@
-import type { UserRole } from '../../../api/auth';
-import { useCurrentUser } from '../use-current-user';
+import type { UserRole } from '@/api/auth';
+import { useCurrentUser } from '@/features/auth/use-current-user';
 
 const containerClasses =
     'mt-6 rounded-3xl border border-border ' + 'bg-surface p-8 shadow-card sm:p-10';
@@ -41,7 +41,7 @@ export function SessionStatus() {
                 <p className='text-xs font-bold uppercase tracking-[0.16em] text-primary'>
                     Acceso institucional
                 </p>
-                <h2 className='mt-3 font-display text-2xl font-bold tracking-[-0.025em]'>
+                <h2 className='mt-3 font-display text-2xl font-bold tracking-tight text-foreground'>
                     Sesión no iniciada
                 </h2>
                 <p className='mt-3 text-muted-foreground'>
@@ -59,7 +59,7 @@ export function SessionStatus() {
                 Sesión institucional
             </p>
 
-            <h2 className='mt-3 font-display text-2xl font-bold tracking-[-0.025em]'>
+            <h2 className='mt-3 font-display text-2xl font-bold tracking-tight text-foreground'>
                 {user.first_name
                     ? `Bienvenido, ${user.first_name}`
                     : 'Bienvenido a Ruta UNSA'}
