@@ -6,13 +6,17 @@ import { HomePage } from '@/pages/public/home-page';
 
 export const router = createBrowserRouter([
     {
-        path: '/',
-        Component: PublicLayout,
         ErrorBoundary: RootErrorBoundary,
         children: [
             {
-                index: true,
-                Component: HomePage,
+                path: '/',
+                Component: PublicLayout,
+                children: [
+                    {
+                        index: true,
+                        Component: HomePage,
+                    },
+                ],
             },
         ],
     },

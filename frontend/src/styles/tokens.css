@@ -1,5 +1,122 @@
+@property --app-background {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #f7f5f2;
+}
+
+@property --app-surface {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #ffffff;
+}
+
+@property --app-surface-muted {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #eeeae5;
+}
+
+@property --app-foreground {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #333333;
+}
+
+@property --app-muted-foreground {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #696164;
+}
+
+@property --app-primary {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #800020;
+}
+
+@property --app-primary-hover {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #650019;
+}
+
+@property --app-accent {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #c8a24a;
+}
+
+@property --app-accent-hover {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #a88536;
+}
+
+@property --app-accent-foreground {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #352906;
+}
+
+@property --app-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #d9d6d2;
+}
+
+@property --app-ring {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #9f2044;
+}
+
+@property --app-sidebar-background {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #211a1d;
+}
+
+@property --app-sidebar-border {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #40363a;
+}
+
+@property --app-sidebar-hover {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #2c2327;
+}
+
+@property --app-sidebar-active {
+    syntax: '<color>';
+    inherits: true;
+    initial-value: #800020;
+}
+
 :root {
     color-scheme: light;
+
+    --app-theme-duration: 240ms;
+    --app-theme-easing: cubic-bezier(0.2, 0, 0, 1);
+
+    transition:
+        --app-background var(--app-theme-duration) var(--app-theme-easing),
+        --app-surface var(--app-theme-duration) var(--app-theme-easing),
+        --app-surface-muted var(--app-theme-duration) var(--app-theme-easing),
+        --app-foreground var(--app-theme-duration) var(--app-theme-easing),
+        --app-muted-foreground var(--app-theme-duration) var(--app-theme-easing),
+        --app-primary var(--app-theme-duration) var(--app-theme-easing),
+        --app-primary-hover var(--app-theme-duration) var(--app-theme-easing),
+        --app-accent var(--app-theme-duration) var(--app-theme-easing),
+        --app-accent-hover var(--app-theme-duration) var(--app-theme-easing),
+        --app-accent-foreground var(--app-theme-duration) var(--app-theme-easing),
+        --app-border var(--app-theme-duration) var(--app-theme-easing),
+        --app-ring var(--app-theme-duration) var(--app-theme-easing),
+        --app-sidebar-background var(--app-theme-duration) var(--app-theme-easing),
+        --app-sidebar-border var(--app-theme-duration) var(--app-theme-easing),
+        --app-sidebar-hover var(--app-theme-duration) var(--app-theme-easing),
+        --app-sidebar-active var(--app-theme-duration) var(--app-theme-easing);
 
     --app-background: #f7f5f2;
     --app-surface: #ffffff;
@@ -13,6 +130,12 @@
     --app-accent-hover: #a88536;
     --app-accent-foreground: #352906;
     --app-border: #d9d6d2;
+    --app-sidebar-background: #211a1d;
+    --app-sidebar-foreground: #f7f5f2;
+    --app-sidebar-muted: #b9b0b3;
+    --app-sidebar-border: #40363a;
+    --app-sidebar-hover: #2c2327;
+    --app-sidebar-active: #800020;
     --app-ring: #9f2044;
     --app-card-shadow: 0 1.5rem 4.5rem rgb(51 51 51 / 10%);
 }
@@ -32,6 +155,12 @@
     --app-accent-hover: #e8cc85;
     --app-accent-foreground: #211a1d;
     --app-border: #40363a;
+    --app-sidebar-background: #130f11;
+    --app-sidebar-foreground: #f7f5f2;
+    --app-sidebar-muted: #b9b0b3;
+    --app-sidebar-border: #34292e;
+    --app-sidebar-hover: #261d21;
+    --app-sidebar-active: #9f2044;
     --app-ring: #bd3655;
     --app-card-shadow: 0 1rem 3rem rgb(0 0 0 / 50%);
 }
@@ -49,6 +178,12 @@
     --color-accent-hover: var(--app-accent-hover);
     --color-accent-foreground: var(--app-accent-foreground);
     --color-border: var(--app-border);
+    --color-sidebar: var(--app-sidebar-background);
+    --color-sidebar-foreground: var(--app-sidebar-foreground);
+    --color-sidebar-muted: var(--app-sidebar-muted);
+    --color-sidebar-border: var(--app-sidebar-border);
+    --color-sidebar-hover: var(--app-sidebar-hover);
+    --color-sidebar-active: var(--app-sidebar-active);
     --color-ring: var(--app-ring);
 
     --color-brand-burgundy: #800020;
