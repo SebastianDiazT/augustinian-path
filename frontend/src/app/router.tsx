@@ -1,13 +1,17 @@
 import { createBrowserRouter } from 'react-router';
 
 import { RootErrorBoundary } from '@/app/errors/root-error-boundary';
+import { StudentRoute } from '@/app/guards/student-route';
 import { PublicLayout } from '@/app/layouts/public-layout';
-import { publicPaths } from '@/app/paths';
+import { StudentLayout } from '@/app/layouts/student-layout';
+import { authPaths, publicPaths, studentPaths } from '@/app/paths';
+import { AuthCallbackPage } from '@/pages/auth/auth-callback-page';
 import { CookiesPage } from '@/pages/public/cookies-page';
 import { HomePage } from '@/pages/public/home-page';
 import { PrivacyPage } from '@/pages/public/privacy-page';
 import { SupportPage } from '@/pages/public/support-page';
 import { TermsPage } from '@/pages/public/terms-page';
+import { StudentHomePage } from '@/pages/student/student-home-page';
 
 export const router = createBrowserRouter([
     {
@@ -36,6 +40,25 @@ export const router = createBrowserRouter([
                     {
                         path: publicPaths.support,
                         Component: SupportPage,
+                    },
+                ],
+            },
+            {
+                path: authPaths.callback,
+                Component: AuthCallbackPage,
+            },
+            {
+                Component: StudentRoute,
+                children: [
+                    {
+                        path: studentPaths.home,
+                        Component: StudentLayout,
+                        children: [
+                            {
+                                index: true,
+                                Component: StudentHomePage,
+                            },
+                        ],
                     },
                 ],
             },

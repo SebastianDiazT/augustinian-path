@@ -2,6 +2,7 @@ import { ensureCsrfCookie } from '@/api/auth';
 import { API_BASE_URL } from '@/api/client';
 import { getCsrfToken } from '@/api/csrf';
 import { apiEndpoints } from '@/api/endpoints';
+import { authPaths } from '@/app/paths';
 
 function appendHiddenField(form: HTMLFormElement, name: string, value: string): void {
     const input = document.createElement('input');
@@ -17,6 +18,7 @@ export async function startGoogleLogin(): Promise<void> {
     await ensureCsrfCookie();
 
     const csrfToken = getCsrfToken();
+    const callbackUrl = new URL(authPaths.callback, window.location.origin).toString();
 
     const form = document.createElement('form');
 
@@ -28,7 +30,7 @@ export async function startGoogleLogin(): Promise<void> {
     appendHiddenField(form, 'csrfmiddlewaretoken', csrfToken);
     appendHiddenField(form, 'provider', 'google');
     appendHiddenField(form, 'process', 'login');
-    appendHiddenField(form, 'callback_url', window.location.origin);
+    appendHiddenField(form, 'callback_url', callbackUrl);
 
     document.body.append(form);
     form.submit();

@@ -6,3 +6,11 @@ export const publicPaths = {
     support: '/support',
     supportContact: '/support#contact',
 } as const;
+
+export const authPaths = {
+    callback: '/auth/callback',
+} as const;
+
+export const studentPaths = {
+    home: '/app',
+} as const;
