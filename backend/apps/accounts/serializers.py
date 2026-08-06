@@ -3,6 +3,8 @@ from urllib.parse import urlsplit
 from allauth.socialaccount.models import SocialAccount
 from rest_framework import serializers
 
+from apps.academics.models import ProfessionalSchool
+
 from .models import User
 
 
@@ -81,16 +83,39 @@ class PlatformAdminAccessDataSerializer(serializers.Serializer):
     authorized = serializers.BooleanField()
 
 
+class AcademicAdminSchoolSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+
+    class Meta:
+        model = ProfessionalSchool
+        fields = [
+            'id',
+            'name',
+        ]
+        read_only_fields = fields
+
+
+class AcademicAdminAssignmentWriteSerializer(
+    serializers.Serializer,
+):
+    professional_school_id = serializers.UUIDField()
+
+
 class PlatformAdminUserSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(
         source='public_id',
         read_only=True,
     )
-    roles = serializers.SlugRelatedField(
-        source='groups',
-        many=True,
+    roles = serializers.SerializerMethodField()
+    academic_admin_school = AcademicAdminSchoolSerializer(
+        source='academic_admin_assignment.professional_school',
         read_only=True,
-        slug_field='name',
+        allow_null=True,
     )
 
     class Meta:
@@ -102,8 +127,26 @@ class PlatformAdminUserSerializer(serializers.ModelSerializer):
             'last_name',
             'is_active',
             'roles',
+            'academic_admin_school',
         ]
         read_only_fields = fields
+
+    def get_roles(self, user: User) -> list[str]:
+        prefetched_roles = getattr(
+            user,
+            'ordered_roles',
+            None,
+        )
+
+        if prefetched_roles is not None:
+            return [role.name for role in prefetched_roles]
+
+        return list(
+            user.groups.order_by('name').values_list(
+                'name',
+                flat=True,
+            )
+        )
 
 
 class PlatformAdminUserPaginationSerializer(

@@ -36,3 +36,37 @@ class User(AbstractUser):
 
     def __str__(self) -> str:
         return self.email
+
+
+class AcademicAdminAssignment(models.Model):
+    """Escuela profesional administrada por un administrador académico."""
+
+    public_id = models.UUIDField(
+        default=uuid4,
+        unique=True,
+        editable=False,
+    )
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='academic_admin_assignment',
+    )
+    professional_school = models.ForeignKey(
+        'academics.ProfessionalSchool',
+        on_delete=models.PROTECT,
+        related_name='academic_admin_assignments',
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = ['user__email']
+        verbose_name = 'asignación de administrador académico'
+        verbose_name_plural = 'asignaciones de administradores académicos'
+
+    def __str__(self) -> str:
+        return f'{self.user.email} — {self.professional_school.name}'
