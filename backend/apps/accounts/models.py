@@ -19,6 +19,19 @@ class User(AbstractUser):
         editable=False,
     )
 
+    google_subject = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True,
+        editable=False,
+    )
+
+    avatar_url = models.URLField(
+        max_length=2048,
+        blank=True,
+    )
+
     email = models.EmailField(
         _('correo electrónico'),
         unique=True,
