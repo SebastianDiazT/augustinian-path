@@ -1,3 +1,4 @@
+from allauth.socialaccount.models import SocialAccount
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from rest_framework import status
@@ -49,8 +50,67 @@ class CurrentUserEndpointTests(APITestCase):
                 'email': 'estudiante@unsa.edu.pe',
                 'first_name': 'Sebastian',
                 'last_name': 'Diaz',
+                'avatar_url': None,
                 'roles': ['student'],
             },
+        )
+
+    def test_returns_google_avatar_url(self) -> None:
+        user = User.objects.create_user(
+            email='estudiante@unsa.edu.pe',
+            password='Prueba123!',
+            first_name='Sebastian',
+            last_name='Diaz',
+        )
+        avatar_url = 'https://lh3.googleusercontent.com/a/example-google-avatar'
+
+        SocialAccount.objects.create(
+            user=user,
+            provider='google',
+            uid='google-user-123',
+            extra_data={
+                'picture': avatar_url,
+            },
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertEqual(
+            response.json()['data']['avatar_url'],
+            avatar_url,
+        )
+
+    def test_ignores_insecure_google_avatar_url(self) -> None:
+        user = User.objects.create_user(
+            email='estudiante@unsa.edu.pe',
+            password='Prueba123!',
+        )
+
+        SocialAccount.objects.create(
+            user=user,
+            provider='google',
+            uid='google-user-123',
+            extra_data={
+                'picture': 'http://example.com/avatar.png',
+            },
+        )
+
+        self.client.force_authenticate(user=user)
+
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_200_OK,
+        )
+        self.assertIsNone(
+            response.json()['data']['avatar_url'],
         )
 
     def test_returns_all_user_roles_ordered_by_name(self) -> None:

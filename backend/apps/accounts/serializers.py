@@ -1,3 +1,6 @@
+from urllib.parse import urlsplit
+
+from allauth.socialaccount.models import SocialAccount
 from rest_framework import serializers
 
 from .models import User
@@ -8,6 +11,7 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         source='public_id',
         read_only=True,
     )
+    avatar_url = serializers.SerializerMethodField()
     roles = serializers.SerializerMethodField()
 
     class Meta:
@@ -17,9 +21,44 @@ class CurrentUserSerializer(serializers.ModelSerializer):
             'email',
             'first_name',
             'last_name',
+            'avatar_url',
             'roles',
         ]
         read_only_fields = fields
+
+    def get_avatar_url(self, user: User) -> str | None:
+        extra_data = (
+            SocialAccount.objects.filter(
+                user=user,
+                provider='google',
+            )
+            .order_by('pk')
+            .values_list(
+                'extra_data',
+                flat=True,
+            )
+            .first()
+        )
+
+        if not isinstance(extra_data, dict):
+            return None
+
+        picture = extra_data.get('picture')
+
+        if not isinstance(picture, str):
+            return None
+
+        picture = picture.strip()
+
+        try:
+            parsed_picture = urlsplit(picture)
+        except ValueError:
+            return None
+
+        if parsed_picture.scheme != 'https' or not parsed_picture.netloc:
+            return None
+
+        return picture
 
     def get_roles(self, user: User) -> list[str]:
         return list(
