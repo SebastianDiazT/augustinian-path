@@ -37,6 +37,21 @@ class CurrentUserSerializer(serializers.ModelSerializer):
         )
 
 
+class GoogleLoginRequestSerializer(serializers.Serializer):
+    credential = serializers.CharField(
+        write_only=True,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+
+
+class GoogleLoginDataSerializer(serializers.Serializer):
+    access = serializers.CharField()
+    refresh = serializers.CharField()
+    user = CurrentUserSerializer()
+    is_new_user = serializers.BooleanField()
+
+
 class CSRFDataSerializer(serializers.Serializer):
     csrf_cookie_set = serializers.BooleanField()
 
