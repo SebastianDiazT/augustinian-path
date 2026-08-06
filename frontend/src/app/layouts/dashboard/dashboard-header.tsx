@@ -2,9 +2,11 @@ import { Menu } from 'lucide-react';
 
 import type { CurrentUser } from '@/api/auth';
 import { UserMenu } from '@/app/layouts/dashboard/user-menu';
+import type { DashboardPanel } from '@/app/layouts/dashboard/dashboard.types';
 import { ThemeMenu } from '@/theme/theme-menu';
 
 interface DashboardHeaderProps {
+    activePanel: DashboardPanel;
     areaLabel: string;
     pageTitle: string;
     user: CurrentUser;
@@ -12,6 +14,7 @@ interface DashboardHeaderProps {
 }
 
 export function DashboardHeader({
+    activePanel,
     areaLabel,
     pageTitle,
     user,
@@ -42,7 +45,7 @@ export function DashboardHeader({
 
             <div className='flex shrink-0 items-center gap-1 sm:gap-2'>
                 <ThemeMenu />
-                <UserMenu user={user} />
+                <UserMenu activePanel={activePanel} user={user} />
             </div>
         </header>
     );

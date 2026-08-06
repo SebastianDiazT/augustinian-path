@@ -4,11 +4,15 @@ import type { PropsWithChildren } from 'react';
 import type { CurrentUser } from '@/api/auth';
 import { DashboardHeader } from '@/app/layouts/dashboard/dashboard-header';
 import { DashboardSidebar } from '@/app/layouts/dashboard/dashboard-sidebar';
-import type { DashboardNavigationGroup } from '@/app/layouts/dashboard/dashboard.types';
+import type {
+    DashboardNavigationGroup,
+    DashboardPanel,
+} from '@/app/layouts/dashboard/dashboard.types';
 
 const SIDEBAR_STORAGE_KEY = 'ruta-agustina-sidebar-collapsed';
 
 interface DashboardShellProps extends PropsWithChildren {
+    activePanel: DashboardPanel;
     areaLabel: string;
     navigation: DashboardNavigationGroup[];
     pageTitle: string;
@@ -24,6 +28,7 @@ function getInitialSidebarState(): boolean {
 }
 
 export function DashboardShell({
+    activePanel,
     areaLabel,
     children,
     navigation,
@@ -124,6 +129,7 @@ export function DashboardShell({
                 ].join(' ')}
             >
                 <DashboardHeader
+                    activePanel={activePanel}
                     areaLabel={areaLabel}
                     pageTitle={pageTitle}
                     user={user}

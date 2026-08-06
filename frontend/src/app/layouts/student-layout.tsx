@@ -25,6 +25,7 @@ export function StudentLayout() {
 
     return (
         <DashboardShell
+            activePanel='student'
             areaLabel='Área estudiantil'
             navigation={studentNavigation}
             pageTitle='Resumen académico'

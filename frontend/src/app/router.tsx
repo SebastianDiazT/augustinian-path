@@ -1,5 +1,9 @@
 import { createBrowserRouter } from 'react-router';
 
+import { AdminRoute } from '@/app/guards/admin-route';
+import { AdminLayout } from '@/app/layouts/admin-layout';
+import { adminPaths } from '@/app/paths';
+import { AdminHomePage } from '@/pages/admin/admin-home-page';
 import { RootErrorBoundary } from '@/app/errors/root-error-boundary';
 import { StudentRoute } from '@/app/guards/student-route';
 import { PublicLayout } from '@/app/layouts/public-layout';
@@ -57,6 +61,21 @@ export const router = createBrowserRouter([
                             {
                                 index: true,
                                 Component: StudentHomePage,
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                Component: AdminRoute,
+                children: [
+                    {
+                        path: adminPaths.home,
+                        Component: AdminLayout,
+                        children: [
+                            {
+                                index: true,
+                                Component: AdminHomePage,
                             },
                         ],
                     },

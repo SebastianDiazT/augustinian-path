@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import {
+    ArrowLeftRight,
     ChevronDown,
     CircleHelp,
     ExternalLink,
@@ -10,10 +11,12 @@ import {
 import { Link } from 'react-router';
 
 import type { CurrentUser } from '@/api/auth';
-import { publicPaths } from '@/app/paths';
+import type { DashboardPanel } from '@/app/layouts/dashboard/dashboard.types';
+import { adminPaths, publicPaths, studentPaths } from '@/app/paths';
 import { useLogout } from '@/features/auth/use-logout';
 
 interface UserMenuProps {
+    activePanel: DashboardPanel;
     user: CurrentUser;
 }
 
@@ -34,13 +37,30 @@ function getInitials(user: CurrentUser): string {
     return user.email.slice(0, 2).toUpperCase();
 }
 
-export function UserMenu({ user }: UserMenuProps) {
+export function UserMenu({ activePanel, user }: UserMenuProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const logout = useLogout();
 
     const displayName = getDisplayName(user);
     const initials = getInitials(user);
+
+    const isAdminPanel = activePanel === 'admin';
+    const panelLabel = isAdminPanel ? 'Administrador' : 'Estudiante';
+
+    const canSwitchToAdmin = !isAdminPanel && user.roles.includes('platform_admin');
+
+    const canSwitchToStudent = isAdminPanel && user.roles.includes('student');
+
+    const switchPath = canSwitchToAdmin
+        ? adminPaths.home
+        : canSwitchToStudent
+          ? studentPaths.home
+          : null;
+
+    const switchLabel = canSwitchToAdmin
+        ? 'Cambiar a administración'
+        : 'Cambiar al panel estudiantil';
 
     useEffect(() => {
         if (!isOpen) {
@@ -98,7 +118,7 @@ export function UserMenu({ user }: UserMenuProps) {
                     </span>
 
                     <span className='block text-xs text-muted-foreground'>
-                        Estudiante
+                        {panelLabel}
                     </span>
                 </span>
 
@@ -124,11 +144,23 @@ export function UserMenu({ user }: UserMenuProps) {
                         </p>
 
                         <span className='mt-3 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary'>
-                            Panel estudiantil
+                            Panel {panelLabel.toLowerCase()}
                         </span>
                     </div>
 
                     <div className='p-2'>
+                        {switchPath ? (
+                            <Link
+                                to={switchPath}
+                                role='menuitem'
+                                className='flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-bold text-primary transition hover:bg-primary/10'
+                                onClick={() => setIsOpen(false)}
+                            >
+                                <ArrowLeftRight className='size-4' aria-hidden='true' />
+                                {switchLabel}
+                            </Link>
+                        ) : null}
+
                         <Link
                             to={publicPaths.support}
                             role='menuitem'
@@ -170,15 +202,6 @@ export function UserMenu({ user }: UserMenuProps) {
 
                             {logout.isPending ? 'Cerrando sesión…' : 'Cerrar sesión'}
                         </button>
-
-                        {logout.isError ? (
-                            <p
-                                className='px-3 pb-2 pt-1 text-xs font-semibold text-primary'
-                                role='alert'
-                            >
-                                No se pudo cerrar la sesión.
-                            </p>
-                        ) : null}
                     </div>
                 </div>
             ) : null}

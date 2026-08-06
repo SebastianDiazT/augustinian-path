@@ -32,6 +32,46 @@ export function SidebarNavigation({
                         {group.items.map((item) => {
                             const Icon = item.icon;
 
+                            if (item.disabled) {
+                                return (
+                                    <div
+                                        key={item.to}
+                                        className={[
+                                            'flex min-h-11 cursor-not-allowed',
+                                            'items-center rounded-xl text-sm',
+                                            'font-bold text-muted-foreground/55',
+                                            collapsed
+                                                ? 'justify-center px-2'
+                                                : 'gap-3 px-3',
+                                        ].join(' ')}
+                                        aria-disabled='true'
+                                        title={
+                                            collapsed
+                                                ? `${item.label} — próximamente`
+                                                : undefined
+                                        }
+                                    >
+                                        <Icon
+                                            className='size-5 shrink-0'
+                                            strokeWidth={2}
+                                            aria-hidden='true'
+                                        />
+
+                                        {!collapsed ? (
+                                            <>
+                                                <span className='min-w-0 flex-1 truncate'>
+                                                    {item.label}
+                                                </span>
+
+                                                <span className='text-[0.6rem] font-extrabold uppercase tracking-wider'>
+                                                    Pronto
+                                                </span>
+                                            </>
+                                        ) : null}
+                                    </div>
+                                );
+                            }
+
                             return (
                                 <NavLink
                                     key={item.to}
