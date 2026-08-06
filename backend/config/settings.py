@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -80,6 +81,7 @@ THIRD_PARTY_APPS = [
     'allauth.socialaccount.providers.google',
     'allauth.headless',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'django_filters',
     'drf_spectacular',
 ]
@@ -264,6 +266,26 @@ SOCIALACCOUNT_PROVIDERS = {
 ACCOUNT_ADAPTER = 'apps.accounts.adapters.GoogleOnlyAccountAdapter'
 
 SOCIALACCOUNT_ADAPTER = 'apps.accounts.adapters.InstitutionalSocialAccountAdapter'
+
+JWT_SIGNING_KEY = env('JWT_SIGNING_KEY')
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(
+        minutes=5,
+    ),
+    'REFRESH_TOKEN_LIFETIME': timedelta(
+        days=1,
+    ),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'UPDATE_LAST_LOGIN': False,
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': JWT_SIGNING_KEY,
+    'ISSUER': 'ruta-agustina-api',
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'USER_ID_FIELD': 'public_id',
+    'USER_ID_CLAIM': 'sub',
+}
 
 REST_FRAMEWORK = {
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
