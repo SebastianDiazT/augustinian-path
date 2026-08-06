@@ -337,3 +337,118 @@ class CurriculumCourse(models.Model):
 
     def __str__(self) -> str:
         return f'{self.curriculum_plan.code}: {self.course.code} — ciclo {self.cycle}'
+
+
+class AcademicPeriod(models.Model):
+    """Periodo académico en el que se dictan asignaturas."""
+
+    class Term(models.TextChoices):
+        FIRST = 'A', 'Primer semestre'
+        SECOND = 'B', 'Segundo semestre'
+
+    public_id = models.UUIDField(
+        default=uuid4,
+        unique=True,
+        editable=False,
+    )
+    year = models.PositiveSmallIntegerField()
+    term = models.CharField(
+        max_length=1,
+        choices=Term.choices,
+    )
+    is_active = models.BooleanField(
+        default=True,
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            '-year',
+            'term',
+        ]
+        verbose_name = 'periodo académico'
+        verbose_name_plural = 'periodos académicos'
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    'year',
+                    'term',
+                ],
+                name='unique_academic_period_year_term',
+            ),
+        ]
+
+    @property
+    def code(self) -> str:
+        return f'{self.year}-{self.term}'
+
+    def __str__(self) -> str:
+        return self.code
+
+
+class CourseOffering(models.Model):
+    """Grupo de una asignatura disponible en un periodo académico."""
+
+    public_id = models.UUIDField(
+        default=uuid4,
+        unique=True,
+        editable=False,
+    )
+    academic_period = models.ForeignKey(
+        AcademicPeriod,
+        on_delete=models.PROTECT,
+        related_name='course_offerings',
+    )
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.PROTECT,
+        related_name='offerings',
+    )
+    group_code = models.CharField(
+        max_length=10,
+    )
+    is_active = models.BooleanField(
+        default=True,
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+    )
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        ordering = [
+            '-academic_period__year',
+            'academic_period__term',
+            'course__code',
+            'group_code',
+        ]
+        verbose_name = 'oferta de asignatura'
+        verbose_name_plural = 'ofertas de asignaturas'
+        constraints = [
+            models.UniqueConstraint(
+                Lower('group_code'),
+                'academic_period',
+                'course',
+                name='unique_course_group_per_period_ci',
+            ),
+            models.CheckConstraint(
+                condition=~models.Q(group_code=''),
+                name='course_offering_group_code_not_empty',
+            ),
+        ]
+
+    def save(self, *args, **kwargs) -> None:
+        self.group_code = ' '.join(self.group_code.split()).upper()
+        super().save(*args, **kwargs)
+
+    def __str__(self) -> str:
+        return (
+            f'{self.academic_period.code}: {self.course.code} — grupo {self.group_code}'
+        )

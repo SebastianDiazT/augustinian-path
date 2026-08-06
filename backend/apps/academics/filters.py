@@ -2,13 +2,16 @@ from django.db.models import Q, QuerySet
 from django_filters import (
     BooleanFilter,
     CharFilter,
+    ChoiceFilter,
     FilterSet,
     NumberFilter,
     UUIDFilter,
 )
 
 from .models import (
+    AcademicPeriod,
     Course,
+    CourseOffering,
     CurriculumCourse,
     CurriculumPlan,
     Faculty,
@@ -123,6 +126,64 @@ class CurriculumCourseFilter(FilterSet):
         name: str,
         value: str,
     ) -> QuerySet[CurriculumCourse]:
+        search_term = value.strip()
+
+        if not search_term:
+            return queryset
+
+        return queryset.filter(
+            Q(course__code__icontains=search_term)
+            | Q(course__name__icontains=search_term)
+        )
+
+
+class AcademicPeriodFilter(FilterSet):
+    year = NumberFilter()
+    term = ChoiceFilter(
+        choices=AcademicPeriod.Term.choices,
+    )
+    is_active = BooleanFilter()
+
+    class Meta:
+        model = AcademicPeriod
+        fields: list[str] = []
+
+
+class CourseOfferingFilter(FilterSet):
+    search = CharFilter(
+        method='filter_search',
+    )
+    academic_period = UUIDFilter(
+        field_name='academic_period__public_id',
+    )
+    year = NumberFilter(
+        field_name='academic_period__year',
+    )
+    term = ChoiceFilter(
+        field_name='academic_period__term',
+        choices=AcademicPeriod.Term.choices,
+    )
+    professional_school = UUIDFilter(
+        field_name='course__professional_school__public_id',
+    )
+    course = UUIDFilter(
+        field_name='course__public_id',
+    )
+    group_code = CharFilter(
+        lookup_expr='iexact',
+    )
+    is_active = BooleanFilter()
+
+    class Meta:
+        model = CourseOffering
+        fields: list[str] = []
+
+    def filter_search(
+        self,
+        queryset: QuerySet[CourseOffering],
+        name: str,
+        value: str,
+    ) -> QuerySet[CourseOffering]:
         search_term = value.strip()
 
         if not search_term:

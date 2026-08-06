@@ -13,7 +13,10 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.accounts.permissions import IsPlatformAdmin
+from apps.accounts.permissions import (
+    IsPlatformAdmin,
+    IsPlatformOrAcademicAdmin,
+)
 from apps.core.openapi import success_response_schema
 from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
@@ -21,21 +24,31 @@ from apps.core.serializers import ApiErrorResponseSerializer
 
 from .admin_scope import SchoolScopedAdminAPIView
 from .filters import (
+    AcademicPeriodFilter,
     CourseFilter,
+    CourseOfferingFilter,
     CurriculumCourseFilter,
     CurriculumPlanFilter,
     FacultyFilter,
     ProfessionalSchoolFilter,
 )
 from .models import (
+    AcademicPeriod,
     Course,
+    CourseOffering,
     CurriculumCourse,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
 )
 from .serializers import (
+    AcademicPeriodListDataSerializer,
+    AcademicPeriodSerializer,
+    AcademicPeriodWriteSerializer,
     CourseListDataSerializer,
+    CourseOfferingListDataSerializer,
+    CourseOfferingSerializer,
+    CourseOfferingWriteSerializer,
     CourseSerializer,
     CourseWriteSerializer,
     CurriculumCourseListDataSerializer,
@@ -916,6 +929,412 @@ class PlatformAdminCurriculumCourseDetailView(
         return success_response(
             data=CurriculumCourseSerializer(
                 updated_curriculum_course,
+            ).data,
+            request_id=request.request_id,
+        )
+
+
+class AcademicPeriodListView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            permission_classes = [
+                IsAuthenticated,
+                IsPlatformOrAcademicAdmin,
+            ]
+        else:
+            permission_classes = self.permission_classes
+
+        return [permission() for permission in permission_classes]
+
+    @extend_schema(
+        summary='Listar periodos académicos',
+        tags=['Administración académica'],
+        parameters=[
+            OpenApiParameter(
+                name='year',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por año académico.',
+            ),
+            OpenApiParameter(
+                name='term',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por semestre A o B.',
+            ),
+            OpenApiParameter(
+                name='is_active',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por estado activo.',
+            ),
+            OpenApiParameter(
+                name='page',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Número de página.',
+            ),
+            OpenApiParameter(
+                name='page_size',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Cantidad de periodos por página. Máximo: 100.'),
+            ),
+        ],
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name=('AcademicPeriodListSuccessResponse'),
+                data_serializer=(AcademicPeriodListDataSerializer),
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+            status.HTTP_404_NOT_FOUND: (ApiErrorResponseSerializer),
+        },
+    )
+    def get(self, request: Request) -> Response:
+        period_filter = AcademicPeriodFilter(
+            data=request.query_params,
+            queryset=AcademicPeriod.objects.all(),
+        )
+
+        if not period_filter.is_valid():
+            raise ValidationError(
+                period_filter.errors,
+            )
+
+        paginator = StandardPageNumberPagination()
+        page = paginator.paginate_queryset(
+            period_filter.qs,
+            request,
+            view=self,
+        )
+
+        serializer = AcademicPeriodSerializer(
+            page,
+            many=True,
+        )
+
+        return success_response(
+            data={
+                'academic_periods': serializer.data,
+                'pagination': paginator.get_metadata(),
+            },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear un periodo académico',
+        tags=['Administración académica'],
+        request=AcademicPeriodWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name=('AcademicPeriodSuccessResponse'),
+                data_serializer=AcademicPeriodSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = AcademicPeriodWriteSerializer(
+            data=request.data,
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        period = serializer.save()
+
+        return success_response(
+            data=AcademicPeriodSerializer(
+                period,
+            ).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class AcademicPeriodDetailView(APIView):
+    permission_classes = [
+        IsAuthenticated,
+        IsPlatformAdmin,
+    ]
+
+    @extend_schema(
+        summary='Actualizar un periodo académico',
+        tags=['Administración académica'],
+        request=AcademicPeriodWriteSerializer,
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name=('AcademicPeriodSuccessResponse'),
+                data_serializer=AcademicPeriodSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+            status.HTTP_404_NOT_FOUND: (ApiErrorResponseSerializer),
+        },
+    )
+    def patch(
+        self,
+        request: Request,
+        period_id: UUID,
+    ) -> Response:
+        period = get_object_or_404(
+            AcademicPeriod,
+            public_id=period_id,
+        )
+
+        serializer = AcademicPeriodWriteSerializer(
+            period,
+            data=request.data,
+            partial=True,
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        updated_period = serializer.save()
+
+        return success_response(
+            data=AcademicPeriodSerializer(
+                updated_period,
+            ).data,
+            request_id=request.request_id,
+        )
+
+
+class CourseOfferingListView(
+    SchoolScopedAdminAPIView,
+):
+    professional_school_lookup = 'course__professional_school_id'
+
+    @extend_schema(
+        summary='Listar ofertas de asignaturas',
+        tags=['Administración académica'],
+        parameters=[
+            OpenApiParameter(
+                name='search',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Busca por código o nombre de asignatura.'),
+            ),
+            OpenApiParameter(
+                name='academic_period',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por periodo académico.',
+            ),
+            OpenApiParameter(
+                name='year',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por año.',
+            ),
+            OpenApiParameter(
+                name='term',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por semestre A o B.',
+            ),
+            OpenApiParameter(
+                name='professional_school',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por escuela profesional.',
+            ),
+            OpenApiParameter(
+                name='course',
+                type=OpenApiTypes.UUID,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por asignatura.',
+            ),
+            OpenApiParameter(
+                name='group_code',
+                type=str,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por código de grupo.',
+            ),
+            OpenApiParameter(
+                name='is_active',
+                type=bool,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Filtra por estado activo.',
+            ),
+            OpenApiParameter(
+                name='page',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description='Número de página.',
+            ),
+            OpenApiParameter(
+                name='page_size',
+                type=int,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description=('Cantidad de ofertas por página. Máximo: 100.'),
+            ),
+        ],
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name=('CourseOfferingListSuccessResponse'),
+                data_serializer=(CourseOfferingListDataSerializer),
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+            status.HTTP_404_NOT_FOUND: (ApiErrorResponseSerializer),
+        },
+    )
+    def get(self, request: Request) -> Response:
+        queryset = self.get_scoped_queryset(
+            request,
+            CourseOffering.objects.select_related(
+                'academic_period',
+                'course',
+                'course__professional_school',
+                'course__professional_school__faculty',
+            ).all(),
+        )
+
+        offering_filter = CourseOfferingFilter(
+            data=request.query_params,
+            queryset=queryset,
+        )
+
+        if not offering_filter.is_valid():
+            raise ValidationError(
+                offering_filter.errors,
+            )
+
+        paginator = StandardPageNumberPagination()
+        page = paginator.paginate_queryset(
+            offering_filter.qs,
+            request,
+            view=self,
+        )
+
+        serializer = CourseOfferingSerializer(
+            page,
+            many=True,
+        )
+
+        return success_response(
+            data={
+                'course_offerings': serializer.data,
+                'pagination': paginator.get_metadata(),
+            },
+            request_id=request.request_id,
+        )
+
+    @extend_schema(
+        summary='Crear una oferta de asignatura',
+        tags=['Administración académica'],
+        request=CourseOfferingWriteSerializer,
+        responses={
+            status.HTTP_201_CREATED: success_response_schema(
+                component_name=('CourseOfferingSuccessResponse'),
+                data_serializer=CourseOfferingSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        serializer = CourseOfferingWriteSerializer(
+            data=request.data,
+            context=self.get_write_serializer_context(
+                request,
+            ),
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        offering = serializer.save()
+
+        return success_response(
+            data=CourseOfferingSerializer(
+                offering,
+            ).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class CourseOfferingDetailView(
+    SchoolScopedAdminAPIView,
+):
+    professional_school_lookup = 'course__professional_school_id'
+
+    @extend_schema(
+        summary='Actualizar una oferta de asignatura',
+        tags=['Administración académica'],
+        request=CourseOfferingWriteSerializer,
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name=('CourseOfferingSuccessResponse'),
+                data_serializer=CourseOfferingSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_403_FORBIDDEN: (ApiErrorResponseSerializer),
+            status.HTTP_404_NOT_FOUND: (ApiErrorResponseSerializer),
+        },
+    )
+    def patch(
+        self,
+        request: Request,
+        offering_id: UUID,
+    ) -> Response:
+        queryset = self.get_scoped_queryset(
+            request,
+            CourseOffering.objects.select_related(
+                'academic_period',
+                'course',
+                'course__professional_school',
+                'course__professional_school__faculty',
+            ).all(),
+        )
+
+        offering = get_object_or_404(
+            queryset,
+            public_id=offering_id,
+        )
+
+        serializer = CourseOfferingWriteSerializer(
+            offering,
+            data=request.data,
+            partial=True,
+            context=self.get_write_serializer_context(
+                request,
+            ),
+        )
+        serializer.is_valid(
+            raise_exception=True,
+        )
+
+        updated_offering = serializer.save()
+
+        return success_response(
+            data=CourseOfferingSerializer(
+                updated_offering,
             ).data,
             request_id=request.request_id,
         )

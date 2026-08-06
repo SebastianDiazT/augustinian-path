@@ -1,6 +1,10 @@
 from django.urls import path
 
 from .admin_views import (
+    AcademicPeriodDetailView,
+    AcademicPeriodListView,
+    CourseOfferingDetailView,
+    CourseOfferingListView,
     PlatformAdminCourseDetailView,
     PlatformAdminCourseListView,
     PlatformAdminCurriculumCourseDetailView,
@@ -16,6 +20,26 @@ from .admin_views import (
 app_name = 'academics-admin'
 
 urlpatterns = [
+    path(
+        'academic-periods/',
+        AcademicPeriodListView.as_view(),
+        name='academic-period-list',
+    ),
+    path(
+        'academic-periods/<uuid:period_id>/',
+        AcademicPeriodDetailView.as_view(),
+        name='academic-period-detail',
+    ),
+    path(
+        'course-offerings/',
+        CourseOfferingListView.as_view(),
+        name='course-offering-list',
+    ),
+    path(
+        'course-offerings/<uuid:offering_id>/',
+        CourseOfferingDetailView.as_view(),
+        name='course-offering-detail',
+    ),
     path(
         'faculties/',
         PlatformAdminFacultyListView.as_view(),

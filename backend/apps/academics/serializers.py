@@ -2,7 +2,9 @@ from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
 from .models import (
+    AcademicPeriod,
     Course,
+    CourseOffering,
     CurriculumCourse,
     CurriculumPlan,
     Faculty,
@@ -972,6 +974,324 @@ class CurriculumCourseListDataSerializer(
     serializers.Serializer,
 ):
     curriculum_courses = CurriculumCourseSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
+class AcademicPeriodSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    code = serializers.CharField(
+        read_only=True,
+    )
+    term_label = serializers.CharField(
+        source='get_term_display',
+        read_only=True,
+    )
+
+    class Meta:
+        model = AcademicPeriod
+        fields = [
+            'id',
+            'code',
+            'year',
+            'term',
+            'term_label',
+            'is_active',
+        ]
+        read_only_fields = fields
+
+
+class AcademicPeriodWriteSerializer(
+    serializers.ModelSerializer,
+):
+    year = serializers.IntegerField(
+        min_value=1,
+        max_value=9999,
+    )
+
+    class Meta:
+        model = AcademicPeriod
+        fields = [
+            'year',
+            'term',
+            'is_active',
+        ]
+        validators = []
+        extra_kwargs = {
+            'is_active': {
+                'required': False,
+            },
+        }
+
+    def validate(
+        self,
+        attrs: dict[str, object],
+    ) -> dict[str, object]:
+        if self.partial and not attrs:
+            raise serializers.ValidationError('Debes proporcionar al menos un campo.')
+
+        year = attrs.get('year')
+        term = attrs.get('term')
+
+        if self.instance is not None:
+            immutable_errors = {}
+
+            if year is not None and year != self.instance.year:
+                immutable_errors['year'] = (
+                    'No se puede cambiar el año de un periodo académico existente.'
+                )
+
+            if term is not None and term != self.instance.term:
+                immutable_errors['term'] = (
+                    'No se puede cambiar el semestre de un periodo académico existente.'
+                )
+
+            if immutable_errors:
+                raise serializers.ValidationError(
+                    immutable_errors,
+                )
+
+            year = self.instance.year
+            term = self.instance.term
+
+        if isinstance(year, int) and isinstance(term, str):
+            existing_periods = AcademicPeriod.objects.filter(
+                year=year,
+                term=term,
+            )
+
+            if self.instance is not None:
+                existing_periods = existing_periods.exclude(
+                    pk=self.instance.pk,
+                )
+
+            if existing_periods.exists():
+                raise serializers.ValidationError(
+                    {
+                        'term': ('Ya existe este periodo académico.'),
+                    }
+                )
+
+        return attrs
+
+    def create(
+        self,
+        validated_data: dict[str, object],
+    ) -> AcademicPeriod:
+        try:
+            with transaction.atomic():
+                return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'term': ('Ya existe este periodo académico.'),
+                }
+            ) from error
+
+
+class AcademicPeriodListDataSerializer(
+    serializers.Serializer,
+):
+    academic_periods = AcademicPeriodSerializer(
+        many=True,
+    )
+    pagination = AcademicPaginationSerializer()
+
+
+class CourseOfferingSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    academic_period = AcademicPeriodSerializer(
+        read_only=True,
+    )
+    course = CourseSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = CourseOffering
+        fields = [
+            'id',
+            'academic_period',
+            'course',
+            'group_code',
+            'is_active',
+        ]
+        read_only_fields = fields
+
+
+class CourseOfferingWriteSerializer(
+    SchoolScopedWriteSerializerMixin,
+    serializers.ModelSerializer,
+):
+    school_scoped_fields = {
+        'course_id': 'professional_school_id',
+    }
+
+    academic_period_id = serializers.SlugRelatedField(
+        source='academic_period',
+        slug_field='public_id',
+        queryset=AcademicPeriod.objects.all(),
+        write_only=True,
+    )
+    course_id = serializers.SlugRelatedField(
+        source='course',
+        slug_field='public_id',
+        queryset=Course.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = CourseOffering
+        fields = [
+            'academic_period_id',
+            'course_id',
+            'group_code',
+            'is_active',
+        ]
+        validators = []
+        extra_kwargs = {
+            'is_active': {
+                'required': False,
+            },
+        }
+
+    def validate_group_code(
+        self,
+        value: str,
+    ) -> str:
+        normalized_code = ' '.join(value.split()).upper()
+
+        if not normalized_code:
+            raise serializers.ValidationError('El código del grupo es obligatorio.')
+
+        return normalized_code
+
+    def validate(
+        self,
+        attrs: dict[str, object],
+    ) -> dict[str, object]:
+        if self.partial and not attrs:
+            raise serializers.ValidationError('Debes proporcionar al menos un campo.')
+
+        academic_period = attrs.get(
+            'academic_period',
+        )
+        course = attrs.get('course')
+        group_code = attrs.get('group_code')
+
+        if self.instance is not None:
+            immutable_errors = {}
+
+            if (
+                isinstance(
+                    academic_period,
+                    AcademicPeriod,
+                )
+                and academic_period.pk != self.instance.academic_period_id
+            ):
+                immutable_errors['academic_period_id'] = (
+                    'No se puede cambiar el periodo académico de una oferta existente.'
+                )
+
+            if isinstance(course, Course) and course.pk != self.instance.course_id:
+                immutable_errors['course_id'] = (
+                    'No se puede cambiar la asignatura de una oferta existente.'
+                )
+
+            if immutable_errors:
+                raise serializers.ValidationError(
+                    immutable_errors,
+                )
+
+            academic_period = self.instance.academic_period
+            course = self.instance.course
+
+            if group_code is None:
+                group_code = self.instance.group_code
+
+        if (
+            isinstance(
+                academic_period,
+                AcademicPeriod,
+            )
+            and isinstance(course, Course)
+            and isinstance(group_code, str)
+        ):
+            existing_offerings = CourseOffering.objects.filter(
+                academic_period=academic_period,
+                course=course,
+                group_code__iexact=group_code,
+            )
+
+            if self.instance is not None:
+                existing_offerings = existing_offerings.exclude(
+                    pk=self.instance.pk,
+                )
+
+            if existing_offerings.exists():
+                raise serializers.ValidationError(
+                    {
+                        'group_code': (
+                            'Ya existe este grupo para la '
+                            'asignatura y el periodo seleccionados.'
+                        ),
+                    }
+                )
+
+        return attrs
+
+    def create(
+        self,
+        validated_data: dict[str, object],
+    ) -> CourseOffering:
+        try:
+            with transaction.atomic():
+                return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'group_code': (
+                        'Ya existe este grupo para la '
+                        'asignatura y el periodo seleccionados.'
+                    ),
+                }
+            ) from error
+
+    def update(
+        self,
+        instance: CourseOffering,
+        validated_data: dict[str, object],
+    ) -> CourseOffering:
+        try:
+            with transaction.atomic():
+                return super().update(
+                    instance,
+                    validated_data,
+                )
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'group_code': (
+                        'Ya existe este grupo para la '
+                        'asignatura y el periodo seleccionados.'
+                    ),
+                }
+            ) from error
+
+
+class CourseOfferingListDataSerializer(
+    serializers.Serializer,
+):
+    course_offerings = CourseOfferingSerializer(
         many=True,
     )
     pagination = AcademicPaginationSerializer()
