@@ -16,7 +16,7 @@ export function PublicFooter() {
     return (
         <footer className='border-t border-border bg-surface'>
             <div className='mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 lg:py-14'>
-                <div className='mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_0.7fr_0.9fr_0.9fr]'>
+                <div className='grid gap-10 sm:grid-cols-2 lg:grid-cols-[1.4fr_0.7fr_0.9fr]'>
                     <div className='max-w-md sm:col-span-2 lg:col-span-1'>
                         <Link
                             to={publicPaths.home}
@@ -40,32 +40,6 @@ export function PublicFooter() {
                             Proyecto independiente
                         </div>
                     </div>
-
-                    <nav aria-labelledby='footer-product'>
-                        <h2
-                            id='footer-product'
-                            className='text-xs font-extrabold uppercase tracking-[0.16em] text-foreground'
-                        >
-                            Producto
-                        </h2>
-
-                        <ul className='mt-4 space-y-2'>
-                            <li>
-                                <a href={publicPaths.home} className={footerLinkClass}>
-                                    Inicio
-                                </a>
-                            </li>
-
-                            <li>
-                                <a
-                                    href={publicPaths.features}
-                                    className={footerLinkClass}
-                                >
-                                    Funciones
-                                </a>
-                            </li>
-                        </ul>
-                    </nav>
 
                     <nav aria-labelledby='footer-support'>
                         <h2

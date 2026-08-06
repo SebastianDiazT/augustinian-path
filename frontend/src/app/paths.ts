@@ -1,6 +1,5 @@
 export const publicPaths = {
     home: '/',
-    features: '/#features',
     privacy: '/privacy',
     terms: '/terms',
     cookies: '/cookies',
