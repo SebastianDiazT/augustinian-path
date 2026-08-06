@@ -13,6 +13,7 @@ import { Link } from 'react-router';
 import type { CurrentUser } from '@/api/auth';
 import type { DashboardPanel } from '@/app/layouts/dashboard/dashboard.types';
 import { adminPaths, publicPaths, studentPaths } from '@/app/paths';
+import { UserAvatar } from '@/features/auth/components/user-avatar';
 import { useLogout } from '@/features/auth/use-logout';
 
 interface UserMenuProps {
@@ -21,20 +22,12 @@ interface UserMenuProps {
 }
 
 function getDisplayName(user: CurrentUser): string {
-    return [user.first_name, user.last_name].filter(Boolean).join(' ') || user.email;
-}
+    const fullName = [user.first_name, user.last_name]
+        .map((value) => value.trim())
+        .filter(Boolean)
+        .join(' ');
 
-function getInitials(user: CurrentUser): string {
-    const firstInitial = user.first_name.trim().charAt(0);
-    const lastInitial = user.last_name.trim().charAt(0);
-
-    const initials = `${firstInitial}${lastInitial}`;
-
-    if (initials) {
-        return initials.toUpperCase();
-    }
-
-    return user.email.slice(0, 2).toUpperCase();
+    return fullName || user.email;
 }
 
 export function UserMenu({ activePanel, user }: UserMenuProps) {
@@ -43,8 +36,6 @@ export function UserMenu({ activePanel, user }: UserMenuProps) {
     const logout = useLogout();
 
     const displayName = getDisplayName(user);
-    const initials = getInitials(user);
-
     const isAdminPanel = activePanel === 'admin';
     const panelLabel = isAdminPanel ? 'Administrador' : 'Estudiante';
 
@@ -108,9 +99,7 @@ export function UserMenu({ activePanel, user }: UserMenuProps) {
                 aria-haspopup='menu'
                 onClick={() => setIsOpen((current) => !current)}
             >
-                <span className='inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-extrabold text-primary-foreground shadow-sm'>
-                    {initials}
-                </span>
+                <UserAvatar user={user} className='size-10 shadow-sm' />
 
                 <span className='hidden min-w-0 sm:block'>
                     <span className='block max-w-40 truncate text-sm font-extrabold text-foreground'>
@@ -136,12 +125,20 @@ export function UserMenu({ activePanel, user }: UserMenuProps) {
                     className='absolute right-0 top-[calc(100%+0.65rem)] z-50 w-72 overflow-hidden rounded-2xl border border-border bg-surface shadow-card'
                     role='menu'
                 >
-                    <div className='border-b border-border px-4 py-4'>
-                        <p className='truncate text-sm font-extrabold'>{displayName}</p>
+                    <div className='border-b border-border p-4'>
+                        <div className='flex items-center gap-3'>
+                            <UserAvatar user={user} className='size-12 shadow-sm' />
 
-                        <p className='mt-1 truncate text-xs text-muted-foreground'>
-                            {user.email}
-                        </p>
+                            <div className='min-w-0'>
+                                <p className='truncate text-sm font-extrabold text-foreground'>
+                                    {displayName}
+                                </p>
+
+                                <p className='mt-0.5 truncate text-xs text-muted-foreground'>
+                                    {user.email}
+                                </p>
+                            </div>
+                        </div>
 
                         <span className='mt-3 inline-flex rounded-full bg-primary/10 px-2.5 py-1 text-xs font-bold text-primary'>
                             Panel {panelLabel.toLowerCase()}
