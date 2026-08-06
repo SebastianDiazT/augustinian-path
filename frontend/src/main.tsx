@@ -7,6 +7,7 @@ import '@fontsource-variable/manrope/wght.css';
 
 import App from '@/App';
 import { queryClient } from '@/app/query-client';
+import { AppToaster } from '@/components/feedback/app-toaster';
 import '@/index.css';
 import { ThemeProvider } from '@/theme/theme-provider';
 
@@ -16,6 +17,8 @@ createRoot(document.getElementById('root')!).render(
             <QueryClientProvider client={queryClient}>
                 <App />
             </QueryClientProvider>
+
+            <AppToaster />
         </ThemeProvider>
     </StrictMode>,
 );

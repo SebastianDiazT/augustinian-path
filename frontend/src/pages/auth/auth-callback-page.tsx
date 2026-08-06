@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 import { Link, useNavigate } from 'react-router';
 
@@ -17,6 +18,11 @@ export function AuthCallbackPage() {
         if (!canOpenStudentPanel) {
             return;
         }
+
+        toast.success('Sesión iniciada correctamente', {
+            id: 'auth-login-success',
+            description: 'Bienvenido a tu panel estudiantil.',
+        });
 
         navigate(studentPaths.home, {
             replace: true,
