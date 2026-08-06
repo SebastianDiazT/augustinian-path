@@ -40,6 +40,7 @@ from .models import (
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
+    StudentCourseAttempt,
 )
 from .serializers import (
     AcademicPeriodListDataSerializer,
@@ -63,6 +64,8 @@ from .serializers import (
     ProfessionalSchoolListDataSerializer,
     ProfessionalSchoolSerializer,
     ProfessionalSchoolWriteSerializer,
+    StudentCourseAttemptSerializer,
+    StudentCourseAttemptWriteSerializer,
 )
 
 
@@ -811,7 +814,11 @@ class PlatformAdminCurriculumCourseListView(
                 'curriculum_plan__professional_school',
                 'curriculum_plan__professional_school__faculty',
                 'course',
-            ).all(),
+            )
+            .prefetch_related(
+                'prerequisites__course',
+            )
+            .all(),
         )
 
         curriculum_course_filter = CurriculumCourseFilter(
@@ -906,7 +913,11 @@ class PlatformAdminCurriculumCourseDetailView(
                 'curriculum_plan__professional_school',
                 'curriculum_plan__professional_school__faculty',
                 'course',
-            ).all(),
+            )
+            .prefetch_related(
+                'prerequisites__course',
+            )
+            .all(),
         )
 
         curriculum_course = get_object_or_404(
@@ -1165,13 +1176,6 @@ class CourseOfferingListView(
                 description='Filtra por asignatura.',
             ),
             OpenApiParameter(
-                name='group_code',
-                type=str,
-                location=OpenApiParameter.QUERY,
-                required=False,
-                description='Filtra por código de grupo.',
-            ),
-            OpenApiParameter(
                 name='is_active',
                 type=bool,
                 location=OpenApiParameter.QUERY,
@@ -1211,7 +1215,12 @@ class CourseOfferingListView(
                 'course',
                 'course__professional_school',
                 'course__professional_school__faculty',
-            ).all(),
+            )
+            .prefetch_related(
+                'curriculum_courses__course',
+                'curriculum_courses__curriculum_plan__professional_school__faculty',
+            )
+            .all(),
         )
 
         offering_filter = CourseOfferingFilter(
@@ -1310,7 +1319,12 @@ class CourseOfferingDetailView(
                 'course',
                 'course__professional_school',
                 'course__professional_school__faculty',
-            ).all(),
+            )
+            .prefetch_related(
+                'curriculum_courses__course',
+                'curriculum_courses__curriculum_plan__professional_school__faculty',
+            )
+            .all(),
         )
 
         offering = get_object_or_404(
@@ -1336,5 +1350,86 @@ class CourseOfferingDetailView(
             data=CourseOfferingSerializer(
                 updated_offering,
             ).data,
+            request_id=request.request_id,
+        )
+
+
+def student_course_attempt_queryset():
+    return StudentCourseAttempt.objects.select_related(
+        'student',
+        'course_offering',
+        'course_offering__academic_period',
+        'course_offering__course',
+        'curriculum_course',
+        'curriculum_course__curriculum_plan',
+    )
+
+
+class StudentCourseAttemptListView(SchoolScopedAdminAPIView):
+    serializer_class = StudentCourseAttemptSerializer
+    professional_school_lookup = (
+        'course_offering__course__professional_school_id'
+    )
+
+    def get(self, request: Request) -> Response:
+        attempts = self.get_scoped_queryset(
+            request,
+            student_course_attempt_queryset(),
+        )
+
+        return success_response(
+            data={
+                'student_course_attempts': StudentCourseAttemptSerializer(
+                    attempts,
+                    many=True,
+                ).data,
+            },
+            request_id=request.request_id,
+        )
+
+    def post(self, request: Request) -> Response:
+        serializer = StudentCourseAttemptWriteSerializer(
+            data=request.data,
+            context=self.get_write_serializer_context(request),
+        )
+        serializer.is_valid(raise_exception=True)
+        attempt = serializer.save()
+
+        return success_response(
+            data=StudentCourseAttemptSerializer(attempt).data,
+            request_id=request.request_id,
+            status_code=status.HTTP_201_CREATED,
+        )
+
+
+class StudentCourseAttemptDetailView(SchoolScopedAdminAPIView):
+    serializer_class = StudentCourseAttemptWriteSerializer
+    professional_school_lookup = (
+        'course_offering__course__professional_school_id'
+    )
+
+    def patch(
+        self,
+        request: Request,
+        attempt_id: UUID,
+    ) -> Response:
+        attempt = get_object_or_404(
+            self.get_scoped_queryset(
+                request,
+                student_course_attempt_queryset(),
+            ),
+            public_id=attempt_id,
+        )
+        serializer = StudentCourseAttemptWriteSerializer(
+            attempt,
+            data=request.data,
+            partial=True,
+            context=self.get_write_serializer_context(request),
+        )
+        serializer.is_valid(raise_exception=True)
+        updated_attempt = serializer.save()
+
+        return success_response(
+            data=StudentCourseAttemptSerializer(updated_attempt).data,
             request_id=request.request_id,
         )

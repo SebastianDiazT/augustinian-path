@@ -439,7 +439,11 @@ class CurriculumCourseCatalogListView(APIView):
                     'curriculum_plan__professional_school',
                     ('curriculum_plan__professional_school__faculty'),
                     'course',
-                ).filter(
+                )
+                .prefetch_related(
+                    'prerequisites__course',
+                )
+                .filter(
                     curriculum_plan__is_active=True,
                     curriculum_plan__professional_school__is_active=True,
                     curriculum_plan__professional_school__faculty__is_active=True,

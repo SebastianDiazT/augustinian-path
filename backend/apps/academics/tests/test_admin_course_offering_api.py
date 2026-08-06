@@ -1,3 +1,4 @@
+from decimal import Decimal
 from uuid import uuid4
 
 from django.contrib.auth.models import Group
@@ -8,6 +9,8 @@ from apps.academics.models import (
     AcademicPeriod,
     Course,
     CourseOffering,
+    CurriculumCourse,
+    CurriculumPlan,
     Faculty,
     ProfessionalSchool,
 )
@@ -105,16 +108,48 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             code='IN 101',
             name='Introducción a Ingeniería Industrial',
         )
+        self.systems_plan = CurriculumPlan.objects.create(
+            professional_school=self.systems,
+            code='2017',
+            name='Plan de Estudios 2017',
+        )
+        self.industrial_plan = CurriculumPlan.objects.create(
+            professional_school=self.industrial,
+            code='2017',
+            name='Plan de Estudios 2017',
+        )
+        self.programming_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.systems_plan,
+            course=self.programming,
+            cycle=1,
+            credits=Decimal('5.00'),
+        )
+        self.databases_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.systems_plan,
+            course=self.databases,
+            cycle=5,
+            credits=Decimal('4.00'),
+        )
+        self.industrial_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.industrial_plan,
+            course=self.industrial_course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
 
         self.systems_offering = CourseOffering.objects.create(
             academic_period=self.period_a,
             course=self.programming,
-            group_code='A',
+        )
+        self.systems_offering.curriculum_courses.add(
+            self.programming_entry,
         )
         self.industrial_offering = CourseOffering.objects.create(
             academic_period=self.period_a,
             course=self.industrial_course,
-            group_code='A',
+        )
+        self.industrial_offering.curriculum_courses.add(
+            self.industrial_entry,
         )
 
     def detail_endpoint(
@@ -136,7 +171,9 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             'course_id': str(
                 self.databases.public_id,
             ),
-            'group_code': 'B',
+            'curriculum_course_ids': [
+                str(self.databases_entry.public_id),
+            ],
         }
 
     def test_rejects_unauthenticated_list(self) -> None:
@@ -246,13 +283,14 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             [],
         )
 
-    def test_filters_by_period_and_group(self) -> None:
+    def test_filters_by_period_and_course(self) -> None:
         self.client.force_authenticate(
             user=self.platform_admin,
         )
 
         response = self.client.get(
-            f'{self.endpoint}?academic_period={self.period_a.public_id}&group_code=A'
+            f'{self.endpoint}?academic_period={self.period_a.public_id}'
+            f'&course={self.programming.public_id}'
         )
 
         self.assertEqual(
@@ -261,7 +299,7 @@ class CourseOfferingAdminEndpointTests(APITestCase):
         )
         self.assertEqual(
             len(response.json()['data']['course_offerings']),
-            2,
+            1,
         )
 
     def test_academic_admin_creates_assigned_school_offering(
@@ -269,12 +307,9 @@ class CourseOfferingAdminEndpointTests(APITestCase):
     ) -> None:
         self.authenticate_academic_admin()
 
-        payload = self.valid_payload()
-        payload['group_code'] = '  b  '
-
         response = self.client.post(
             self.endpoint,
-            payload,
+            self.valid_payload(),
             format='json',
         )
 
@@ -283,14 +318,13 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             status.HTTP_201_CREATED,
         )
         self.assertEqual(
-            response.json()['data']['group_code'],
-            'B',
+            response.json()['data']['curriculum_courses'][0]['id'],
+            str(self.databases_entry.public_id),
         )
         self.assertTrue(
             CourseOffering.objects.filter(
                 academic_period=self.period_a,
                 course=self.databases,
-                group_code='B',
             ).exists()
         )
 
@@ -308,7 +342,9 @@ class CourseOfferingAdminEndpointTests(APITestCase):
                 'course_id': str(
                     self.industrial_course.public_id,
                 ),
-                'group_code': 'B',
+                'curriculum_course_ids': [
+                    str(self.industrial_entry.public_id),
+                ],
             },
             format='json',
         )
@@ -333,12 +369,14 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             self.endpoint,
             {
                 'academic_period_id': str(
-                    self.period_a.public_id,
+                    self.period_b.public_id,
                 ),
                 'course_id': str(
                     self.industrial_course.public_id,
                 ),
-                'group_code': 'B',
+                'curriculum_course_ids': [
+                    str(self.industrial_entry.public_id),
+                ],
             },
             format='json',
         )
@@ -348,7 +386,7 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             status.HTTP_201_CREATED,
         )
 
-    def test_rejects_duplicate_group(self) -> None:
+    def test_rejects_duplicate_course_in_period(self) -> None:
         self.authenticate_academic_admin()
 
         response = self.client.post(
@@ -360,7 +398,9 @@ class CourseOfferingAdminEndpointTests(APITestCase):
                 'course_id': str(
                     self.programming.public_id,
                 ),
-                'group_code': 'a',
+                'curriculum_course_ids': [
+                    str(self.programming_entry.public_id),
+                ],
             },
             format='json',
         )
@@ -370,7 +410,87 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             status.HTTP_400_BAD_REQUEST,
         )
         self.assertIn(
-            'group_code',
+            'course_id',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_curriculum_entry_for_another_course(self) -> None:
+        self.authenticate_academic_admin()
+
+        payload = self.valid_payload()
+        payload['curriculum_course_ids'] = [
+            str(self.programming_entry.public_id),
+        ]
+
+        response = self.client.post(
+            self.endpoint,
+            payload,
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'curriculum_course_ids',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_offering_without_curriculum_entries(self) -> None:
+        self.authenticate_academic_admin()
+
+        payload = self.valid_payload()
+        payload['curriculum_course_ids'] = []
+
+        response = self.client.post(
+            self.endpoint,
+            payload,
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'curriculum_course_ids',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_curriculum_versions_with_different_schedule_hours(
+        self,
+    ) -> None:
+        self.authenticate_academic_admin()
+        other_plan = CurriculumPlan.objects.create(
+            professional_school=self.systems,
+            code='2025',
+            name='Plan de Estudios 2025',
+        )
+        incompatible_entry = CurriculumCourse.objects.create(
+            curriculum_plan=other_plan,
+            course=self.programming,
+            cycle=1,
+            credits=Decimal('5.00'),
+            theory_hours=Decimal('2.00'),
+        )
+
+        response = self.client.post(
+            self.endpoint,
+            {
+                'academic_period_id': str(self.period_b.public_id),
+                'course_id': str(self.programming.public_id),
+                'curriculum_course_ids': [
+                    str(self.programming_entry.public_id),
+                    str(incompatible_entry.public_id),
+                ],
+            },
+            format='json',
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn(
+            'curriculum_course_ids',
             response.json()['error']['errors'],
         )
 
@@ -378,13 +498,27 @@ class CourseOfferingAdminEndpointTests(APITestCase):
         self,
     ) -> None:
         self.authenticate_academic_admin()
+        other_plan = CurriculumPlan.objects.create(
+            professional_school=self.systems,
+            code='2025',
+            name='Plan de Estudios 2025',
+        )
+        other_programming_entry = CurriculumCourse.objects.create(
+            curriculum_plan=other_plan,
+            course=self.programming,
+            cycle=2,
+            credits=Decimal('4.00'),
+        )
 
         response = self.client.patch(
             self.detail_endpoint(
                 self.systems_offering,
             ),
             {
-                'group_code': 'C',
+                'curriculum_course_ids': [
+                    str(self.programming_entry.public_id),
+                    str(other_programming_entry.public_id),
+                ],
                 'is_active': False,
             },
             format='json',
@@ -397,12 +531,15 @@ class CourseOfferingAdminEndpointTests(APITestCase):
 
         self.systems_offering.refresh_from_db()
 
-        self.assertEqual(
-            self.systems_offering.group_code,
-            'C',
-        )
         self.assertFalse(
             self.systems_offering.is_active,
+        )
+        self.assertEqual(
+            set(self.systems_offering.curriculum_courses.all()),
+            {
+                self.programming_entry,
+                other_programming_entry,
+            },
         )
 
     def test_rejects_changing_offering_identity(
@@ -448,7 +585,7 @@ class CourseOfferingAdminEndpointTests(APITestCase):
                 self.industrial_offering,
             ),
             {
-                'group_code': 'C',
+                'is_active': False,
             },
             format='json',
         )
@@ -460,10 +597,7 @@ class CourseOfferingAdminEndpointTests(APITestCase):
 
         self.industrial_offering.refresh_from_db()
 
-        self.assertEqual(
-            self.industrial_offering.group_code,
-            'A',
-        )
+        self.assertTrue(self.industrial_offering.is_active)
 
     def test_rejects_unknown_period_or_course(
         self,
@@ -475,7 +609,7 @@ class CourseOfferingAdminEndpointTests(APITestCase):
             {
                 'academic_period_id': str(uuid4()),
                 'course_id': str(uuid4()),
-                'group_code': 'B',
+                'curriculum_course_ids': [str(uuid4())],
             },
             format='json',
         )
@@ -490,5 +624,9 @@ class CourseOfferingAdminEndpointTests(APITestCase):
         )
         self.assertIn(
             'course_id',
+            response.json()['error']['errors'],
+        )
+        self.assertIn(
+            'curriculum_course_ids',
             response.json()['error']['errors'],
         )

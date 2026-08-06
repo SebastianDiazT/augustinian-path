@@ -22,8 +22,32 @@ api_urlpatterns = [
         include('apps.academics.admin_urls'),
     ),
     path(
+        'admin/',
+        include('apps.scheduling.admin_urls'),
+    ),
+    path(
+        'admin/',
+        include('apps.grading.admin_urls'),
+    ),
+    path(
+        'admin/',
+        include('apps.syllabi.admin_urls'),
+    ),
+    path(
         'academics/',
         include('apps.academics.urls'),
+    ),
+    path(
+        'scheduling/',
+        include('apps.scheduling.urls'),
+    ),
+    path(
+        'grading/',
+        include('apps.grading.urls'),
+    ),
+    path(
+        'syllabi/',
+        include('apps.syllabi.urls'),
     ),
 ]
 

@@ -93,7 +93,15 @@ class PlatformAdminCurriculumCourseWriteTests(
             'curriculum_plan_id': str(self.systems_plan.public_id),
             'course_id': str(self.data_structures.public_id),
             'cycle': 2,
+            'component': CurriculumCourse.Component.SPECIFIC_STUDIES,
             'credits': '4.50',
+            'prerequisite_credits': '20.00',
+            'theory_hours': '1.00',
+            'seminar_hours': '1.00',
+            'theory_practice_hours': '2.00',
+            'practice_hours': '2.00',
+            'laboratory_hours': '4.00',
+            'prerequisite_ids': [str(self.entry.public_id)],
         }
 
     def detail_endpoint(
@@ -158,6 +166,26 @@ class PlatformAdminCurriculumCourseWriteTests(
         self.assertEqual(
             created_entry.credits,
             Decimal('4.50'),
+        )
+        self.assertEqual(
+            created_entry.theory_schedule_hours,
+            Decimal('6.00'),
+        )
+        self.assertEqual(
+            created_entry.laboratory_hours,
+            Decimal('4.00'),
+        )
+        self.assertEqual(
+            list(created_entry.prerequisites.all()),
+            [self.entry],
+        )
+        self.assertEqual(
+            response.json()['data']['component'],
+            CurriculumCourse.Component.SPECIFIC_STUDIES,
+        )
+        self.assertEqual(
+            response.json()['data']['theory_schedule_hours'],
+            '6.00',
         )
 
     def test_rejects_unknown_curriculum_plan(self) -> None:
@@ -283,6 +311,73 @@ class PlatformAdminCurriculumCourseWriteTests(
         )
         self.assertIn(
             'credits',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_negative_laboratory_hours(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        payload = self.valid_payload()
+        payload['laboratory_hours'] = '-0.01'
+
+        response = self.client.post(
+            self.endpoint,
+            payload,
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'laboratory_hours',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_prerequisite_from_another_plan(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+        industrial_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.industrial_plan,
+            course=self.industrial_course,
+            cycle=1,
+            credits=Decimal('3.00'),
+        )
+        payload = self.valid_payload()
+        payload['prerequisite_ids'] = [str(industrial_entry.public_id)]
+
+        response = self.client.post(
+            self.endpoint,
+            payload,
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'prerequisite_ids',
+            response.json()['error']['errors'],
+        )
+
+    def test_rejects_self_as_prerequisite(self) -> None:
+        self.client.force_authenticate(user=self.admin)
+
+        response = self.client.patch(
+            self.detail_endpoint(self.entry),
+            {
+                'prerequisite_ids': [str(self.entry.public_id)],
+            },
+            format='json',
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertIn(
+            'prerequisite_ids',
             response.json()['error']['errors'],
         )
 

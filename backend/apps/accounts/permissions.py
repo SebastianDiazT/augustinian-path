@@ -57,6 +57,21 @@ class IsAcademicAdmin(BasePermission):
         ).exists()
 
 
+class IsStudent(BasePermission):
+    message = 'No tienes permisos de estudiante.'
+    code = 'student_required'
+
+    def has_permission(
+        self,
+        request: Request,
+        view: APIView,
+    ) -> bool:
+        return user_has_role(
+            request,
+            Role.STUDENT,
+        )
+
+
 class IsPlatformOrAcademicAdmin(BasePermission):
     message = 'No tienes permisos de administración académica.'
     code = 'admin_required'

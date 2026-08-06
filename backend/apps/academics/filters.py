@@ -169,9 +169,6 @@ class CourseOfferingFilter(FilterSet):
     course = UUIDFilter(
         field_name='course__public_id',
     )
-    group_code = CharFilter(
-        lookup_expr='iexact',
-    )
     is_active = BooleanFilter()
 
     class Meta:

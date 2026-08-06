@@ -1,14 +1,19 @@
 from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
+from apps.accounts.models import User
+from apps.accounts.roles import Role
+
 from .models import (
     AcademicPeriod,
     Course,
     CourseOffering,
     CurriculumCourse,
+    CurriculumCoursePrerequisite,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
+    StudentCourseAttempt,
 )
 
 
@@ -399,10 +404,24 @@ class SchoolScopedWriteSerializerMixin:
                 None,
             )
 
+            queryset_owner = field
+
+            if queryset is None:
+                queryset_owner = getattr(
+                    field,
+                    'child_relation',
+                    field,
+                )
+                queryset = getattr(
+                    queryset_owner,
+                    'queryset',
+                    None,
+                )
+
             if queryset is None:
                 continue
 
-            field.queryset = queryset.filter(
+            queryset_owner.queryset = queryset.filter(
                 **{
                     lookup: professional_school_id,
                 }
@@ -770,6 +789,32 @@ class CourseReferenceSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class CurriculumCourseReferenceSerializer(
+    serializers.ModelSerializer,
+):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    course = CourseReferenceSerializer(
+        read_only=True,
+    )
+    curriculum_plan = CurriculumPlanCatalogSerializer(
+        read_only=True,
+    )
+
+    class Meta:
+        model = CurriculumCourse
+        fields = [
+            'id',
+            'curriculum_plan',
+            'course',
+            'cycle',
+            'component',
+        ]
+        read_only_fields = fields
+
+
 class CurriculumCourseSerializer(
     serializers.ModelSerializer,
 ):
@@ -783,6 +828,22 @@ class CurriculumCourseSerializer(
     course = CourseReferenceSerializer(
         read_only=True,
     )
+    component_label = serializers.CharField(
+        source='get_component_display',
+        read_only=True,
+    )
+    theory_schedule_hours = serializers.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        read_only=True,
+    )
+    has_laboratory = serializers.BooleanField(
+        read_only=True,
+    )
+    prerequisites = CurriculumCourseReferenceSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = CurriculumCourse
@@ -791,7 +852,18 @@ class CurriculumCourseSerializer(
             'curriculum_plan',
             'course',
             'cycle',
+            'component',
+            'component_label',
             'credits',
+            'prerequisite_credits',
+            'theory_hours',
+            'seminar_hours',
+            'theory_practice_hours',
+            'practice_hours',
+            'theory_schedule_hours',
+            'laboratory_hours',
+            'has_laboratory',
+            'prerequisites',
         ]
         read_only_fields = fields
 
@@ -809,6 +881,22 @@ class CurriculumCourseCatalogSerializer(
     course = CourseReferenceSerializer(
         read_only=True,
     )
+    component_label = serializers.CharField(
+        source='get_component_display',
+        read_only=True,
+    )
+    theory_schedule_hours = serializers.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        read_only=True,
+    )
+    has_laboratory = serializers.BooleanField(
+        read_only=True,
+    )
+    prerequisites = CurriculumCourseReferenceSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = CurriculumCourse
@@ -817,7 +905,18 @@ class CurriculumCourseCatalogSerializer(
             'curriculum_plan',
             'course',
             'cycle',
+            'component',
+            'component_label',
             'credits',
+            'prerequisite_credits',
+            'theory_hours',
+            'seminar_hours',
+            'theory_practice_hours',
+            'practice_hours',
+            'theory_schedule_hours',
+            'laboratory_hours',
+            'has_laboratory',
+            'prerequisites',
         ]
         read_only_fields = fields
 
@@ -838,6 +937,7 @@ class CurriculumCourseWriteSerializer(
     school_scoped_fields = {
         'curriculum_plan_id': 'professional_school_id',
         'course_id': 'professional_school_id',
+        'prerequisite_ids': 'curriculum_plan__professional_school_id',
     }
 
     curriculum_plan_id = serializers.SlugRelatedField(
@@ -852,6 +952,14 @@ class CurriculumCourseWriteSerializer(
         queryset=Course.objects.all(),
         write_only=True,
     )
+    prerequisite_ids = serializers.SlugRelatedField(
+        source='prerequisites',
+        slug_field='public_id',
+        queryset=CurriculumCourse.objects.all(),
+        many=True,
+        required=False,
+        write_only=True,
+    )
 
     class Meta:
         model = CurriculumCourse
@@ -859,7 +967,15 @@ class CurriculumCourseWriteSerializer(
             'curriculum_plan_id',
             'course_id',
             'cycle',
+            'component',
             'credits',
+            'prerequisite_credits',
+            'theory_hours',
+            'seminar_hours',
+            'theory_practice_hours',
+            'practice_hours',
+            'laboratory_hours',
+            'prerequisite_ids',
         ]
         validators = []
 
@@ -872,6 +988,7 @@ class CurriculumCourseWriteSerializer(
 
         curriculum_plan = attrs.get('curriculum_plan')
         course = attrs.get('course')
+        prerequisites = attrs.get('prerequisites')
 
         if self.instance is not None:
             current_plan = self.instance.curriculum_plan
@@ -898,6 +1015,43 @@ class CurriculumCourseWriteSerializer(
 
             curriculum_plan = current_plan
             course = current_course
+
+        if isinstance(curriculum_plan, CurriculumPlan) and isinstance(
+            prerequisites,
+            list,
+        ):
+            prerequisite_ids = [prerequisite.pk for prerequisite in prerequisites]
+
+            if len(prerequisite_ids) != len(set(prerequisite_ids)):
+                raise serializers.ValidationError(
+                    {
+                        'prerequisite_ids': ('No se puede repetir un prerrequisito.'),
+                    }
+                )
+
+            invalid_plan = any(
+                prerequisite.curriculum_plan_id != curriculum_plan.pk
+                for prerequisite in prerequisites
+            )
+
+            if invalid_plan:
+                raise serializers.ValidationError(
+                    {
+                        'prerequisite_ids': (
+                            'Todos los prerrequisitos deben pertenecer '
+                            'al mismo plan de estudios.'
+                        ),
+                    }
+                )
+
+            if self.instance is not None and self.instance.pk in prerequisite_ids:
+                raise serializers.ValidationError(
+                    {
+                        'prerequisite_ids': (
+                            'Una asignatura no puede ser su propio prerrequisito.'
+                        ),
+                    }
+                )
 
         if isinstance(curriculum_plan, CurriculumPlan) and isinstance(course, Course):
             if curriculum_plan.professional_school_id != course.professional_school_id:
@@ -937,9 +1091,19 @@ class CurriculumCourseWriteSerializer(
         self,
         validated_data: dict[str, object],
     ) -> CurriculumCourse:
+        prerequisites = validated_data.pop(
+            'prerequisites',
+            [],
+        )
+
         try:
             with transaction.atomic():
-                return super().create(validated_data)
+                curriculum_course = super().create(validated_data)
+                self._replace_prerequisites(
+                    curriculum_course,
+                    prerequisites,
+                )
+                return curriculum_course
         except IntegrityError as error:
             raise serializers.ValidationError(
                 {
@@ -954,12 +1118,25 @@ class CurriculumCourseWriteSerializer(
         instance: CurriculumCourse,
         validated_data: dict[str, object],
     ) -> CurriculumCourse:
+        prerequisites = validated_data.pop(
+            'prerequisites',
+            None,
+        )
+
         try:
             with transaction.atomic():
-                return super().update(
+                curriculum_course = super().update(
                     instance,
                     validated_data,
                 )
+
+                if prerequisites is not None:
+                    self._replace_prerequisites(
+                        curriculum_course,
+                        prerequisites,
+                    )
+
+                return curriculum_course
         except IntegrityError as error:
             raise serializers.ValidationError(
                 {
@@ -968,6 +1145,19 @@ class CurriculumCourseWriteSerializer(
                     ),
                 }
             ) from error
+
+    @staticmethod
+    def _replace_prerequisites(
+        curriculum_course: CurriculumCourse,
+        prerequisites: list[CurriculumCourse],
+    ) -> None:
+        curriculum_course.prerequisite_links.all().delete()
+
+        for prerequisite in prerequisites:
+            CurriculumCoursePrerequisite.objects.create(
+                curriculum_course=curriculum_course,
+                prerequisite=prerequisite,
+            )
 
 
 class CurriculumCourseListDataSerializer(
@@ -1115,6 +1305,10 @@ class CourseOfferingSerializer(
     course = CourseSerializer(
         read_only=True,
     )
+    curriculum_courses = CurriculumCourseReferenceSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = CourseOffering
@@ -1122,7 +1316,7 @@ class CourseOfferingSerializer(
             'id',
             'academic_period',
             'course',
-            'group_code',
+            'curriculum_courses',
             'is_active',
         ]
         read_only_fields = fields
@@ -1134,6 +1328,7 @@ class CourseOfferingWriteSerializer(
 ):
     school_scoped_fields = {
         'course_id': 'professional_school_id',
+        'curriculum_course_ids': 'curriculum_plan__professional_school_id',
     }
 
     academic_period_id = serializers.SlugRelatedField(
@@ -1148,13 +1343,20 @@ class CourseOfferingWriteSerializer(
         queryset=Course.objects.all(),
         write_only=True,
     )
+    curriculum_course_ids = serializers.SlugRelatedField(
+        source='curriculum_courses',
+        slug_field='public_id',
+        queryset=CurriculumCourse.objects.all(),
+        many=True,
+        write_only=True,
+    )
 
     class Meta:
         model = CourseOffering
         fields = [
             'academic_period_id',
             'course_id',
-            'group_code',
+            'curriculum_course_ids',
             'is_active',
         ]
         validators = []
@@ -1163,17 +1365,6 @@ class CourseOfferingWriteSerializer(
                 'required': False,
             },
         }
-
-    def validate_group_code(
-        self,
-        value: str,
-    ) -> str:
-        normalized_code = ' '.join(value.split()).upper()
-
-        if not normalized_code:
-            raise serializers.ValidationError('El código del grupo es obligatorio.')
-
-        return normalized_code
 
     def validate(
         self,
@@ -1186,7 +1377,7 @@ class CourseOfferingWriteSerializer(
             'academic_period',
         )
         course = attrs.get('course')
-        group_code = attrs.get('group_code')
+        curriculum_courses = attrs.get('curriculum_courses')
 
         if self.instance is not None:
             immutable_errors = {}
@@ -1215,8 +1406,60 @@ class CourseOfferingWriteSerializer(
             academic_period = self.instance.academic_period
             course = self.instance.course
 
-            if group_code is None:
-                group_code = self.instance.group_code
+        if isinstance(curriculum_courses, list):
+            curriculum_course_ids = [
+                curriculum_course.pk for curriculum_course in curriculum_courses
+            ]
+
+            if not curriculum_course_ids:
+                raise serializers.ValidationError(
+                    {
+                        'curriculum_course_ids': (
+                            'Debes vincular al menos una entrada de la malla.'
+                        ),
+                    }
+                )
+
+            if len(curriculum_course_ids) != len(set(curriculum_course_ids)):
+                raise serializers.ValidationError(
+                    {
+                        'curriculum_course_ids': (
+                            'No se puede repetir una entrada de la malla.'
+                        ),
+                    }
+                )
+
+            if isinstance(course, Course) and any(
+                curriculum_course.course_id != course.pk
+                for curriculum_course in curriculum_courses
+            ):
+                raise serializers.ValidationError(
+                    {
+                        'curriculum_course_ids': (
+                            'Todas las entradas de la malla deben corresponder '
+                            'a la asignatura ofertada.'
+                        ),
+                    }
+                )
+
+            hour_profiles = {
+                (
+                    curriculum_course.theory_schedule_hours,
+                    curriculum_course.laboratory_hours,
+                )
+                for curriculum_course in curriculum_courses
+            }
+
+            if len(hour_profiles) > 1:
+                raise serializers.ValidationError(
+                    {
+                        'curriculum_course_ids': (
+                            'Todas las versiones de la malla vinculadas a una '
+                            'oferta deben definir las mismas horas de teoría '
+                            'y laboratorio.'
+                        ),
+                    }
+                )
 
         if (
             isinstance(
@@ -1224,12 +1467,10 @@ class CourseOfferingWriteSerializer(
                 AcademicPeriod,
             )
             and isinstance(course, Course)
-            and isinstance(group_code, str)
         ):
             existing_offerings = CourseOffering.objects.filter(
                 academic_period=academic_period,
                 course=course,
-                group_code__iexact=group_code,
             )
 
             if self.instance is not None:
@@ -1240,9 +1481,9 @@ class CourseOfferingWriteSerializer(
             if existing_offerings.exists():
                 raise serializers.ValidationError(
                     {
-                        'group_code': (
-                            'Ya existe este grupo para la '
-                            'asignatura y el periodo seleccionados.'
+                        'course_id': (
+                            'La asignatura ya tiene una oferta '
+                            'en el periodo seleccionado.'
                         ),
                     }
                 )
@@ -1253,15 +1494,23 @@ class CourseOfferingWriteSerializer(
         self,
         validated_data: dict[str, object],
     ) -> CourseOffering:
+        curriculum_courses = validated_data.pop(
+            'curriculum_courses',
+        )
+
         try:
             with transaction.atomic():
-                return super().create(validated_data)
+                offering = super().create(validated_data)
+                offering.curriculum_courses.set(
+                    curriculum_courses,
+                )
+                return offering
         except IntegrityError as error:
             raise serializers.ValidationError(
                 {
-                    'group_code': (
-                        'Ya existe este grupo para la '
-                        'asignatura y el periodo seleccionados.'
+                    'course_id': (
+                        'La asignatura ya tiene una oferta '
+                        'en el periodo seleccionado.'
                     ),
                 }
             ) from error
@@ -1271,18 +1520,30 @@ class CourseOfferingWriteSerializer(
         instance: CourseOffering,
         validated_data: dict[str, object],
     ) -> CourseOffering:
+        curriculum_courses = validated_data.pop(
+            'curriculum_courses',
+            None,
+        )
+
         try:
             with transaction.atomic():
-                return super().update(
+                offering = super().update(
                     instance,
                     validated_data,
                 )
+
+                if curriculum_courses is not None:
+                    offering.curriculum_courses.set(
+                        curriculum_courses,
+                    )
+
+                return offering
         except IntegrityError as error:
             raise serializers.ValidationError(
                 {
-                    'group_code': (
-                        'Ya existe este grupo para la '
-                        'asignatura y el periodo seleccionados.'
+                    'course_id': (
+                        'La asignatura ya tiene una oferta '
+                        'en el periodo seleccionado.'
                     ),
                 }
             ) from error
@@ -1295,3 +1556,251 @@ class CourseOfferingListDataSerializer(
         many=True,
     )
     pagination = AcademicPaginationSerializer()
+
+
+class StudentCourseAttemptSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(
+        source='public_id',
+        read_only=True,
+    )
+    student_id = serializers.UUIDField(
+        source='student.public_id',
+        read_only=True,
+    )
+    student_email = serializers.EmailField(
+        source='student.email',
+        read_only=True,
+    )
+    course_offering_id = serializers.UUIDField(
+        source='course_offering.public_id',
+        read_only=True,
+    )
+    curriculum_course_id = serializers.UUIDField(
+        source='curriculum_course.public_id',
+        read_only=True,
+    )
+    academic_period_code = serializers.CharField(
+        source='course_offering.academic_period.code',
+        read_only=True,
+    )
+    course_code = serializers.CharField(
+        source='course_offering.course.code',
+        read_only=True,
+    )
+    course_name = serializers.CharField(
+        source='course_offering.course.name',
+        read_only=True,
+    )
+    status_label = serializers.CharField(
+        source='get_status_display',
+        read_only=True,
+    )
+
+    class Meta:
+        model = StudentCourseAttempt
+        fields = [
+            'id',
+            'student_id',
+            'student_email',
+            'course_offering_id',
+            'curriculum_course_id',
+            'academic_period_code',
+            'course_code',
+            'course_name',
+            'status',
+            'status_label',
+            'final_grade',
+        ]
+        read_only_fields = fields
+
+
+class StudentCourseAttemptWriteSerializer(
+    SchoolScopedWriteSerializerMixin,
+    serializers.ModelSerializer,
+):
+    school_scoped_fields = {
+        'course_offering_id': 'course__professional_school_id',
+        'curriculum_course_id': 'curriculum_plan__professional_school_id',
+    }
+    student_id = serializers.SlugRelatedField(
+        source='student',
+        slug_field='public_id',
+        queryset=User.objects.filter(
+            is_active=True,
+            groups__name=Role.STUDENT.value,
+        ).distinct(),
+        write_only=True,
+    )
+    course_offering_id = serializers.SlugRelatedField(
+        source='course_offering',
+        slug_field='public_id',
+        queryset=CourseOffering.objects.all(),
+        write_only=True,
+    )
+    curriculum_course_id = serializers.SlugRelatedField(
+        source='curriculum_course',
+        slug_field='public_id',
+        queryset=CurriculumCourse.objects.all(),
+        write_only=True,
+    )
+
+    class Meta:
+        model = StudentCourseAttempt
+        fields = [
+            'student_id',
+            'course_offering_id',
+            'curriculum_course_id',
+            'status',
+            'final_grade',
+        ]
+        validators = []
+        extra_kwargs = {
+            'status': {
+                'required': False,
+            },
+            'final_grade': {
+                'required': False,
+            },
+        }
+
+    def validate(self, attrs: dict[str, object]) -> dict[str, object]:
+        if self.partial and not attrs:
+            raise serializers.ValidationError('Debes proporcionar al menos un campo.')
+
+        student = attrs.get('student')
+        offering = attrs.get('course_offering')
+        curriculum_course = attrs.get('curriculum_course')
+        attempt_status = attrs.get('status')
+        final_grade = attrs.get('final_grade')
+
+        if self.instance is not None:
+            immutable_errors = {}
+
+            for field_name, value, current_id in (
+                ('student_id', student, self.instance.student_id),
+                (
+                    'course_offering_id',
+                    offering,
+                    self.instance.course_offering_id,
+                ),
+                (
+                    'curriculum_course_id',
+                    curriculum_course,
+                    self.instance.curriculum_course_id,
+                ),
+            ):
+                if value is not None and value.pk != current_id:
+                    immutable_errors[field_name] = (
+                        'No se puede cambiar este vínculo en un intento existente.'
+                    )
+
+            if immutable_errors:
+                raise serializers.ValidationError(immutable_errors)
+
+            student = self.instance.student
+            offering = self.instance.course_offering
+            curriculum_course = self.instance.curriculum_course
+            attempt_status = attempt_status or self.instance.status
+
+            if 'final_grade' not in attrs:
+                final_grade = self.instance.final_grade
+        elif attempt_status is None:
+            attempt_status = StudentCourseAttempt.Status.ENROLLED
+
+        if (
+            isinstance(offering, CourseOffering)
+            and isinstance(curriculum_course, CurriculumCourse)
+            and not offering.curriculum_courses.filter(
+                pk=curriculum_course.pk,
+            ).exists()
+        ):
+            raise serializers.ValidationError(
+                {
+                    'curriculum_course_id': (
+                        'La entrada de malla no está vinculada a la oferta.'
+                    ),
+                }
+            )
+
+        grade_errors = self._validate_status_grade(
+            attempt_status,
+            final_grade,
+        )
+
+        if grade_errors:
+            raise serializers.ValidationError(grade_errors)
+
+        if isinstance(student, User) and isinstance(offering, CourseOffering):
+            duplicate_attempts = StudentCourseAttempt.objects.filter(
+                student=student,
+                course_offering=offering,
+            )
+
+            if self.instance is not None:
+                duplicate_attempts = duplicate_attempts.exclude(
+                    pk=self.instance.pk,
+                )
+
+            if duplicate_attempts.exists():
+                raise serializers.ValidationError(
+                    {
+                        'course_offering_id': (
+                            'El estudiante ya tiene un intento para esta oferta.'
+                        ),
+                    }
+                )
+
+        return attrs
+
+    def _validate_status_grade(
+        self,
+        attempt_status: object,
+        final_grade: object,
+    ) -> dict[str, str]:
+        if attempt_status == StudentCourseAttempt.Status.PASSED and (
+            final_grade is None
+            or final_grade < StudentCourseAttempt.PASSING_GRADE
+        ):
+            return {
+                'final_grade': (
+                    'Un curso aprobado requiere una nota final mínima de 10.50.'
+                ),
+            }
+
+        if attempt_status == StudentCourseAttempt.Status.FAILED and (
+            final_grade is None
+            or final_grade >= StudentCourseAttempt.PASSING_GRADE
+        ):
+            return {
+                'final_grade': (
+                    'Un curso desaprobado requiere una nota final menor que 10.50.'
+                ),
+            }
+
+        if attempt_status in {
+            StudentCourseAttempt.Status.ENROLLED,
+            StudentCourseAttempt.Status.WITHDRAWN,
+        } and final_grade is not None:
+            return {
+                'final_grade': (
+                    'Un curso en curso o retirado no debe tener nota final.'
+                ),
+            }
+
+        return {}
+
+    def create(
+        self,
+        validated_data: dict[str, object],
+    ) -> StudentCourseAttempt:
+        try:
+            with transaction.atomic():
+                return super().create(validated_data)
+        except IntegrityError as error:
+            raise serializers.ValidationError(
+                {
+                    'course_offering_id': (
+                        'El estudiante ya tiene un intento para esta oferta.'
+                    ),
+                }
+            ) from error

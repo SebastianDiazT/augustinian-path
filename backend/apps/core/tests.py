@@ -4,6 +4,14 @@ from uuid import UUID, uuid4
 
 from django.contrib.auth.models import AnonymousUser
 from django.core.cache import cache
+from django.core.exceptions import (
+    NON_FIELD_ERRORS,
+    ObjectDoesNotExist,
+    SuspiciousOperation,
+)
+from django.core.exceptions import ValidationError as DjangoValidationError
+from django.db import DataError, IntegrityError
+from django.db.models.deletion import ProtectedError, RestrictedError
 from django.test import SimpleTestCase, override_settings
 from django.urls import path as url_path
 from django.utils.dateparse import parse_datetime
@@ -129,6 +137,116 @@ class UnexpectedErrorView(APIView):
         )
 
 
+class ExpectedDjangoErrorView(APIView):
+    authentication_classes = []
+    permission_classes = []
+    raised_exception: Exception | None = None
+
+    def get(self, request: Request) -> Response:
+        if self.raised_exception is None:
+            raise RuntimeError('La prueba debe configurar una excepción.')
+
+        raise self.raised_exception
+
+
+class ExpectedDjangoExceptionResponseTests(SimpleTestCase):
+    endpoint = '/api/v1/expected-failure/'
+
+    def get_response(self, exception: Exception) -> Response:
+        request = APIRequestFactory().get(self.endpoint)
+
+        return ExpectedDjangoErrorView.as_view(
+            raised_exception=exception,
+        )(request)
+
+    @patch('apps.core.exceptions.logger.error')
+    def test_converts_django_validation_error_to_standard_400(
+        self,
+        logger_error,
+    ) -> None:
+        response = self.get_response(
+            DjangoValidationError(
+                {
+                    NON_FIELD_ERRORS: [
+                        'La combinación de campos ya existe.',
+                    ],
+                    'start_time': [
+                        'La hora de inicio no es válida.',
+                    ],
+                }
+            )
+        )
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_400_BAD_REQUEST,
+        )
+        self.assertEqual(
+            response.data['error']['errors'],
+            {
+                'non_field_errors': [
+                    'La combinación de campos ya existe.',
+                ],
+                'start_time': [
+                    'La hora de inicio no es válida.',
+                ],
+            },
+        )
+        logger_error.assert_not_called()
+
+    @patch('apps.core.exceptions.logger.error')
+    def test_maps_expected_non_drf_exceptions_without_exposing_details(
+        self,
+        logger_error,
+    ) -> None:
+        cases = (
+            (
+                IntegrityError('sensitive database constraint'),
+                status.HTTP_409_CONFLICT,
+                'conflict',
+            ),
+            (
+                ProtectedError('sensitive protected relation', set()),
+                status.HTTP_409_CONFLICT,
+                'conflict',
+            ),
+            (
+                RestrictedError('sensitive restricted relation', set()),
+                status.HTTP_409_CONFLICT,
+                'conflict',
+            ),
+            (
+                DataError('sensitive invalid database value'),
+                status.HTTP_400_BAD_REQUEST,
+                'invalid',
+            ),
+            (
+                ObjectDoesNotExist('sensitive missing object'),
+                status.HTTP_404_NOT_FOUND,
+                'not-found',
+            ),
+            (
+                SuspiciousOperation('sensitive malformed request'),
+                status.HTTP_400_BAD_REQUEST,
+                'parse-error',
+            ),
+        )
+
+        for exception, expected_status, expected_code in cases:
+            with self.subTest(exception=type(exception).__name__):
+                response = self.get_response(exception)
+                body = response.data
+
+                self.assertEqual(response.status_code, expected_status)
+                self.assertEqual(
+                    body['error']['type'],
+                    f'urn:augustinian-path:problem:{expected_code}',
+                )
+                self.assertNotIn('sensitive', str(body))
+
+        logger_error.assert_not_called()
+
+
 class UnhandledExceptionResponseTests(SimpleTestCase):
     @patch('apps.core.exceptions.logger.error')
     def test_returns_standard_internal_server_error(
@@ -221,6 +339,21 @@ class OpenApiSchemaTests(SimpleTestCase):
                             '$ref': ('#/components/schemas/ApiErrorResponse'),
                         },
                     )
+
+            if method in {
+                'post',
+                'put',
+                'patch',
+                'delete',
+            }:
+                response = operation['responses']['409']
+
+                self.assertEqual(
+                    response['content']['application/json']['schema'],
+                    {
+                        '$ref': ('#/components/schemas/ApiErrorResponse'),
+                    },
+                )
 
 
 class FirstThrottleTestView(APIView):

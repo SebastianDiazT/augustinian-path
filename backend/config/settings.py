@@ -88,6 +88,9 @@ LOCAL_APPS = [
     'apps.core',
     'apps.accounts',
     'apps.academics',
+    'apps.scheduling',
+    'apps.grading',
+    'apps.syllabi',
 ]
 
 INSTALLED_APPS = [
@@ -302,6 +305,19 @@ SPECTACULAR_SETTINGS = {
     ),
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {
+        'StudentCourseAttemptStatusEnum': [
+            ('ENROLLED', 'En curso'),
+            ('PASSED', 'Aprobado'),
+            ('FAILED', 'Desaprobado'),
+            ('WITHDRAWN', 'Retirado'),
+        ],
+        'SyllabusStatusEnum': [
+            ('DRAFT', 'Borrador'),
+            ('PUBLISHED', 'Publicado'),
+            ('ARCHIVED', 'Archivado'),
+        ],
+    },
     'POSTPROCESSING_HOOKS': [
         'drf_spectacular.hooks.postprocess_schema_enums',
         ('apps.core.openapi.add_standard_error_responses'),

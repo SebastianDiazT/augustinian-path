@@ -9,6 +9,7 @@ from django.test import TestCase
 from apps.academics.models import (
     Course,
     CurriculumCourse,
+    CurriculumCoursePrerequisite,
     CurriculumPlan,
     Faculty,
     ProfessionalSchool,
@@ -442,6 +443,135 @@ class CurriculumCourseTests(TestCase):
         self.assertIn(
             curriculum_course,
             self.course.curriculum_entries.all(),
+        )
+
+    def test_represents_curriculum_hours_and_component(self) -> None:
+        curriculum_course = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            component=CurriculumCourse.Component.SPECIFIC_STUDIES,
+            credits=Decimal('5.00'),
+            prerequisite_credits=Decimal('20.00'),
+            theory_hours=Decimal('2.00'),
+            seminar_hours=Decimal('1.00'),
+            theory_practice_hours=Decimal('1.00'),
+            practice_hours=Decimal('2.00'),
+            laboratory_hours=Decimal('4.00'),
+        )
+
+        self.assertEqual(
+            curriculum_course.theory_schedule_hours,
+            Decimal('6.00'),
+        )
+        self.assertTrue(curriculum_course.has_laboratory)
+        self.assertEqual(
+            curriculum_course.get_component_display(),
+            'Estudios específicos',
+        )
+
+    def test_rejects_negative_curriculum_hours(self) -> None:
+        curriculum_course = CurriculumCourse(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+            laboratory_hours=Decimal('-0.01'),
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            curriculum_course.full_clean()
+
+        self.assertIn(
+            'laboratory_hours',
+            context.exception.message_dict,
+        )
+
+    def test_adds_prerequisite_from_same_curriculum_plan(self) -> None:
+        prerequisite = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+        advanced_course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 201',
+            name='Estructuras de Datos',
+        )
+        advanced_entry = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=advanced_course,
+            cycle=2,
+            credits=Decimal('4.00'),
+        )
+
+        CurriculumCoursePrerequisite.objects.create(
+            curriculum_course=advanced_entry,
+            prerequisite=prerequisite,
+        )
+
+        self.assertEqual(
+            list(advanced_entry.prerequisites.all()),
+            [prerequisite],
+        )
+        self.assertEqual(
+            list(prerequisite.required_by.all()),
+            [advanced_entry],
+        )
+
+    def test_rejects_prerequisite_from_another_plan(self) -> None:
+        prerequisite = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+        other_plan = CurriculumPlan.objects.create(
+            professional_school=self.school,
+            code='2026',
+            name='Plan de Estudios 2026',
+        )
+        advanced_course = Course.objects.create(
+            professional_school=self.school,
+            code='CS 201',
+            name='Estructuras de Datos',
+        )
+        advanced_entry = CurriculumCourse.objects.create(
+            curriculum_plan=other_plan,
+            course=advanced_course,
+            cycle=2,
+            credits=Decimal('4.00'),
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            CurriculumCoursePrerequisite.objects.create(
+                curriculum_course=advanced_entry,
+                prerequisite=prerequisite,
+            )
+
+        self.assertIn(
+            'prerequisite',
+            context.exception.message_dict,
+        )
+
+    def test_rejects_self_as_prerequisite(self) -> None:
+        curriculum_course = CurriculumCourse.objects.create(
+            curriculum_plan=self.plan,
+            course=self.course,
+            cycle=1,
+            credits=Decimal('4.00'),
+        )
+
+        with self.assertRaises(ValidationError) as context:
+            CurriculumCoursePrerequisite.objects.create(
+                curriculum_course=curriculum_course,
+                prerequisite=curriculum_course,
+            )
+
+        self.assertIn(
+            'prerequisite',
+            context.exception.message_dict,
         )
 
     def test_rejects_course_from_different_school(

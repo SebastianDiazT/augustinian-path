@@ -43,6 +43,11 @@ def add_standard_error_responses(
             status.HTTP_500_INTERNAL_SERVER_ERROR,
         ): 'Error interno del servidor.',
     }
+    mutation_error_responses = {
+        str(
+            status.HTTP_409_CONFLICT,
+        ): 'La operación entra en conflicto con el estado actual de los datos.',
+    }
 
     for path_item in result.get(
         'paths',
@@ -57,7 +62,19 @@ def add_standard_error_responses(
                 {},
             )
 
-            for status_code, description in error_responses.items():
+            applicable_error_responses = dict(error_responses)
+
+            if method in {
+                'post',
+                'put',
+                'patch',
+                'delete',
+            }:
+                applicable_error_responses.update(
+                    mutation_error_responses,
+                )
+
+            for status_code, description in applicable_error_responses.items():
                 responses.setdefault(
                     status_code,
                     {

@@ -15,6 +15,8 @@ from .admin_views import (
     PlatformAdminFacultyListView,
     PlatformAdminProfessionalSchoolDetailView,
     PlatformAdminProfessionalSchoolListView,
+    StudentCourseAttemptDetailView,
+    StudentCourseAttemptListView,
 )
 
 app_name = 'academics-admin'
@@ -39,6 +41,16 @@ urlpatterns = [
         'course-offerings/<uuid:offering_id>/',
         CourseOfferingDetailView.as_view(),
         name='course-offering-detail',
+    ),
+    path(
+        'student-course-attempts/',
+        StudentCourseAttemptListView.as_view(),
+        name='student-course-attempt-list',
+    ),
+    path(
+        'student-course-attempts/<uuid:attempt_id>/',
+        StudentCourseAttemptDetailView.as_view(),
+        name='student-course-attempt-detail',
     ),
     path(
         'faculties/',
