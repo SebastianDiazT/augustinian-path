@@ -236,14 +236,16 @@ HEADLESS_FRONTEND_URLS = {
     'socialaccount_login_error': FRONTEND_URL,
 }
 
+GOOGLE_OAUTH_CLIENT_ID = env(
+    'GOOGLE_OAUTH_CLIENT_ID',
+    default='',
+)
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'APPS': [
             {
-                'client_id': env(
-                    'GOOGLE_OAUTH_CLIENT_ID',
-                    default='',
-                ),
+                'client_id': GOOGLE_OAUTH_CLIENT_ID,
                 'secret': env(
                     'GOOGLE_OAUTH_CLIENT_SECRET',
                     default='',
