@@ -369,9 +369,52 @@ class CurriculumPlanCatalogListDataSerializer(
     pagination = AcademicPaginationSerializer()
 
 
+class SchoolScopedWriteSerializerMixin:
+    school_scoped_fields: dict[str, str] = {}
+
+    def __init__(
+        self,
+        *args,
+        **kwargs,
+    ) -> None:
+        super().__init__(
+            *args,
+            **kwargs,
+        )
+
+        professional_school_id = self.context.get(
+            'professional_school_id',
+        )
+
+        if professional_school_id is None:
+            return
+
+        for field_name, lookup in self.school_scoped_fields.items():
+            field = self.fields[field_name]
+            queryset = getattr(
+                field,
+                'queryset',
+                None,
+            )
+
+            if queryset is None:
+                continue
+
+            field.queryset = queryset.filter(
+                **{
+                    lookup: professional_school_id,
+                }
+            )
+
+
 class CurriculumPlanWriteSerializer(
+    SchoolScopedWriteSerializerMixin,
     serializers.ModelSerializer,
 ):
+    school_scoped_fields = {
+        'professional_school_id': 'pk',
+    }
+
     professional_school_id = serializers.SlugRelatedField(
         source='professional_school',
         slug_field='public_id',
@@ -561,7 +604,14 @@ class CourseCatalogListDataSerializer(
     pagination = AcademicPaginationSerializer()
 
 
-class CourseWriteSerializer(serializers.ModelSerializer):
+class CourseWriteSerializer(
+    SchoolScopedWriteSerializerMixin,
+    serializers.ModelSerializer,
+):
+    school_scoped_fields = {
+        'professional_school_id': 'pk',
+    }
+
     professional_school_id = serializers.SlugRelatedField(
         source='professional_school',
         slug_field='public_id',
@@ -780,8 +830,14 @@ class CurriculumCourseCatalogListDataSerializer(
 
 
 class CurriculumCourseWriteSerializer(
+    SchoolScopedWriteSerializerMixin,
     serializers.ModelSerializer,
 ):
+    school_scoped_fields = {
+        'curriculum_plan_id': 'professional_school_id',
+        'course_id': 'professional_school_id',
+    }
+
     curriculum_plan_id = serializers.SlugRelatedField(
         source='curriculum_plan',
         slug_field='public_id',

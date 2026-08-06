@@ -19,6 +19,7 @@ from apps.core.pagination import StandardPageNumberPagination
 from apps.core.responses import success_response
 from apps.core.serializers import ApiErrorResponseSerializer
 
+from .admin_scope import SchoolScopedAdminAPIView
 from .filters import (
     CourseFilter,
     CurriculumCourseFilter,
@@ -375,11 +376,8 @@ class PlatformAdminProfessionalSchoolListView(APIView):
         )
 
 
-class PlatformAdminCurriculumPlanListView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+class PlatformAdminCurriculumPlanListView(SchoolScopedAdminAPIView):
+    professional_school_lookup = 'professional_school_id'
 
     @extend_schema(
         summary='Listar planes de estudios de la UNSA',
@@ -432,14 +430,17 @@ class PlatformAdminCurriculumPlanListView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
+        queryset = self.get_scoped_queryset(
+            request,
+            CurriculumPlan.objects.select_related(
+                'professional_school',
+                'professional_school__faculty',
+            ).all(),
+        )
+
         plan_filter = CurriculumPlanFilter(
             data=request.query_params,
-            queryset=(
-                CurriculumPlan.objects.select_related(
-                    'professional_school',
-                    'professional_school__faculty',
-                ).all()
-            ),
+            queryset=queryset,
         )
 
         if not plan_filter.is_valid():
@@ -481,6 +482,9 @@ class PlatformAdminCurriculumPlanListView(APIView):
     def post(self, request: Request) -> Response:
         serializer = CurriculumPlanWriteSerializer(
             data=request.data,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
@@ -493,11 +497,8 @@ class PlatformAdminCurriculumPlanListView(APIView):
         )
 
 
-class PlatformAdminCurriculumPlanDetailView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+class PlatformAdminCurriculumPlanDetailView(SchoolScopedAdminAPIView):
+    professional_school_lookup = 'professional_school_id'
 
     @extend_schema(
         summary='Actualizar un plan de estudios',
@@ -518,11 +519,16 @@ class PlatformAdminCurriculumPlanDetailView(APIView):
         request: Request,
         plan_id: UUID,
     ) -> Response:
-        plan = get_object_or_404(
+        queryset = self.get_scoped_queryset(
+            request,
             CurriculumPlan.objects.select_related(
                 'professional_school',
                 'professional_school__faculty',
             ),
+        )
+
+        plan = get_object_or_404(
+            queryset,
             public_id=plan_id,
         )
 
@@ -530,6 +536,9 @@ class PlatformAdminCurriculumPlanDetailView(APIView):
             plan,
             data=request.data,
             partial=True,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
@@ -543,11 +552,8 @@ class PlatformAdminCurriculumPlanDetailView(APIView):
         )
 
 
-class PlatformAdminCourseListView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+class PlatformAdminCourseListView(SchoolScopedAdminAPIView):
+    professional_school_lookup = 'professional_school_id'
 
     @extend_schema(
         summary='Listar asignaturas de la UNSA',
@@ -600,14 +606,17 @@ class PlatformAdminCourseListView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
+        queryset = self.get_scoped_queryset(
+            request,
+            Course.objects.select_related(
+                'professional_school',
+                'professional_school__faculty',
+            ).all(),
+        )
+
         course_filter = CourseFilter(
             data=request.query_params,
-            queryset=(
-                Course.objects.select_related(
-                    'professional_school',
-                    'professional_school__faculty',
-                ).all()
-            ),
+            queryset=queryset,
         )
 
         if not course_filter.is_valid():
@@ -649,6 +658,9 @@ class PlatformAdminCourseListView(APIView):
     def post(self, request: Request) -> Response:
         serializer = CourseWriteSerializer(
             data=request.data,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
@@ -661,11 +673,8 @@ class PlatformAdminCourseListView(APIView):
         )
 
 
-class PlatformAdminCourseDetailView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+class PlatformAdminCourseDetailView(SchoolScopedAdminAPIView):
+    professional_school_lookup = 'professional_school_id'
 
     @extend_schema(
         summary='Actualizar una asignatura',
@@ -686,11 +695,16 @@ class PlatformAdminCourseDetailView(APIView):
         request: Request,
         course_id: UUID,
     ) -> Response:
-        course = get_object_or_404(
+        queryset = self.get_scoped_queryset(
+            request,
             Course.objects.select_related(
                 'professional_school',
                 'professional_school__faculty',
-            ),
+            ).all(),
+        )
+
+        course = get_object_or_404(
+            queryset,
             public_id=course_id,
         )
 
@@ -698,6 +712,9 @@ class PlatformAdminCourseDetailView(APIView):
             course,
             data=request.data,
             partial=True,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
@@ -709,11 +726,10 @@ class PlatformAdminCourseDetailView(APIView):
         )
 
 
-class PlatformAdminCurriculumCourseListView(APIView):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+class PlatformAdminCurriculumCourseListView(
+    SchoolScopedAdminAPIView,
+):
+    professional_school_lookup = 'curriculum_plan__professional_school_id'
 
     @extend_schema(
         summary='Listar asignaturas de planes de estudios',
@@ -775,16 +791,19 @@ class PlatformAdminCurriculumCourseListView(APIView):
         },
     )
     def get(self, request: Request) -> Response:
+        queryset = self.get_scoped_queryset(
+            request,
+            CurriculumCourse.objects.select_related(
+                'curriculum_plan',
+                'curriculum_plan__professional_school',
+                'curriculum_plan__professional_school__faculty',
+                'course',
+            ).all(),
+        )
+
         curriculum_course_filter = CurriculumCourseFilter(
             data=request.query_params,
-            queryset=(
-                CurriculumCourse.objects.select_related(
-                    'curriculum_plan',
-                    'curriculum_plan__professional_school',
-                    ('curriculum_plan__professional_school__faculty'),
-                    'course',
-                ).all()
-            ),
+            queryset=queryset,
         )
 
         if not curriculum_course_filter.is_valid():
@@ -826,6 +845,9 @@ class PlatformAdminCurriculumCourseListView(APIView):
     def post(self, request: Request) -> Response:
         serializer = CurriculumCourseWriteSerializer(
             data=request.data,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
@@ -841,12 +863,9 @@ class PlatformAdminCurriculumCourseListView(APIView):
 
 
 class PlatformAdminCurriculumCourseDetailView(
-    APIView,
+    SchoolScopedAdminAPIView,
 ):
-    permission_classes = [
-        IsAuthenticated,
-        IsPlatformAdmin,
-    ]
+    professional_school_lookup = 'curriculum_plan__professional_school_id'
 
     @extend_schema(
         summary='Actualizar una asignatura de un plan',
@@ -867,13 +886,18 @@ class PlatformAdminCurriculumCourseDetailView(
         request: Request,
         curriculum_course_id: UUID,
     ) -> Response:
-        curriculum_course = get_object_or_404(
+        queryset = self.get_scoped_queryset(
+            request,
             CurriculumCourse.objects.select_related(
                 'curriculum_plan',
                 'curriculum_plan__professional_school',
                 'curriculum_plan__professional_school__faculty',
                 'course',
-            ),
+            ).all(),
+        )
+
+        curriculum_course = get_object_or_404(
+            queryset,
             public_id=curriculum_course_id,
         )
 
@@ -881,6 +905,9 @@ class PlatformAdminCurriculumCourseDetailView(
             curriculum_course,
             data=request.data,
             partial=True,
+            context=self.get_write_serializer_context(
+                request,
+            ),
         )
         serializer.is_valid(raise_exception=True)
 
