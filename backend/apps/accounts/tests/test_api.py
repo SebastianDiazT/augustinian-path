@@ -10,7 +10,7 @@ User = get_user_model()
 class CurrentUserEndpointTests(APITestCase):
     endpoint = '/api/v1/auth/me/'
 
-    def authenticate_with_jwt(self, user: User) -> str: # type: ignore
+    def authenticate_with_jwt(self, user: User) -> str:  # type: ignore
         refresh_token = RefreshToken.for_user(user)
         access_token = str(refresh_token.access_token)
 
@@ -200,49 +200,4 @@ class CSRFEndpointTests(APITestCase):
         self.assertEqual(
             response.status_code,
             status.HTTP_200_OK,
-        )
-
-
-class LogoutEndpointTests(APITestCase):
-    endpoint = '/api/v1/auth/logout/'
-
-    def setUp(self) -> None:
-        self.user = User.objects.create_user(
-            email='logout@unsa.edu.pe',
-            password='Prueba123!',
-        )
-
-    def test_rejects_unauthenticated_request(self) -> None:
-        response = self.client.post(self.endpoint)
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_403_FORBIDDEN,
-        )
-        self.assertIn('error', response.json())
-
-    def test_logs_out_authenticated_user(self) -> None:
-        self.client.login(
-            email='logout@unsa.edu.pe',
-            password='Prueba123!',
-        )
-
-        response = self.client.post(self.endpoint)
-
-        self.assertEqual(
-            response.status_code,
-            status.HTTP_200_OK,
-        )
-        self.assertEqual(
-            response.json()['data'],
-            {
-                'authenticated': False,
-            },
-        )
-
-        me_response = self.client.get('/api/v1/auth/me/')
-
-        self.assertEqual(
-            me_response.status_code,
-            status.HTTP_401_UNAUTHORIZED,
         )

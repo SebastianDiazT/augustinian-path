@@ -73,8 +73,18 @@ class CSRFDataSerializer(serializers.Serializer):
     csrf_cookie_set = serializers.BooleanField()
 
 
+class LogoutRequestSerializer(serializers.Serializer):
+    refresh = serializers.CharField(
+        write_only=True,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+
+
 class LogoutDataSerializer(serializers.Serializer):
-    authenticated = serializers.BooleanField()
+    revoked = serializers.BooleanField(
+        read_only=True,
+    )
 
 
 class PlatformAdminAccessDataSerializer(serializers.Serializer):

@@ -1,4 +1,3 @@
-from django.contrib.auth import logout
 from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
@@ -19,6 +18,7 @@ from rest_framework_simplejwt.exceptions import (
 from rest_framework_simplejwt.serializers import (
     TokenRefreshSerializer,
 )
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from apps.core.exceptions import Conflict
 from apps.core.openapi import success_response_schema
@@ -44,6 +44,7 @@ from .serializers import (
     GoogleLoginDataSerializer,
     GoogleLoginRequestSerializer,
     LogoutDataSerializer,
+    LogoutRequestSerializer,
     RefreshTokenDataSerializer,
     RefreshTokenRequestSerializer,
 )
@@ -152,6 +153,7 @@ class RefreshTokenView(APIView):
     @extend_schema(
         summary='Renovar los tokens de autenticación',
         tags=['Autenticación'],
+        auth=[],
         request=RefreshTokenRequestSerializer,
         responses={
             status.HTTP_200_OK: success_response_schema(
@@ -217,26 +219,46 @@ class CSRFView(APIView):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
+    authentication_classes = [
+        BearerChallengeAuthentication,
+    ]
+    permission_classes = []
 
     @extend_schema(
         summary='Cerrar la sesión actual',
         tags=['Autenticación'],
-        request=None,
+        auth=[],
+        request=LogoutRequestSerializer,
         responses={
             status.HTTP_200_OK: success_response_schema(
                 component_name='LogoutSuccessResponse',
                 data_serializer=LogoutDataSerializer,
             ),
-            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_401_UNAUTHORIZED: (ApiErrorResponseSerializer),
         },
     )
     def post(self, request: Request) -> Response:
-        logout(request)
+        request_serializer = LogoutRequestSerializer(
+            data=request.data,
+        )
+        request_serializer.is_valid(
+            raise_exception=True,
+        )
+
+        refresh_value = request_serializer.validated_data['refresh']
+
+        try:
+            refresh_token = RefreshToken(
+                refresh_value,
+            )
+            refresh_token.blacklist()
+        except TokenError as error:
+            raise InvalidToken() from error
 
         return success_response(
             data={
-                'authenticated': False,
+                'revoked': True,
             },
             request_id=request.request_id,
         )
