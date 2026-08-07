@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from rest_framework import status
 from rest_framework.test import APITestCase
+from rest_framework_simplejwt.tokens import RefreshToken
 
 User = get_user_model()
 
@@ -9,18 +10,27 @@ User = get_user_model()
 class CurrentUserEndpointTests(APITestCase):
     endpoint = '/api/v1/auth/me/'
 
+    def authenticate_with_jwt(self, user: User) -> str:
+        refresh_token = RefreshToken.for_user(user)
+        access_token = str(refresh_token.access_token)
+
+        self.client.credentials(
+            HTTP_AUTHORIZATION=f'Bearer {access_token}',
+        )
+
+        return access_token
+
     def test_rejects_unauthenticated_request(self) -> None:
         response = self.client.get(self.endpoint)
 
-        self.assertIn(
+        self.assertEqual(
             response.status_code,
-            [
-                response.status_code,
-                status.HTTP_403_FORBIDDEN,
-            ],
+            status.HTTP_401_UNAUTHORIZED,
         )
-
-        self.assertIn('error', response.json())
+        self.assertIn(
+            'error',
+            response.json(),
+        )
 
     def test_returns_authenticated_user(self) -> None:
         user = User.objects.create_user(
@@ -33,7 +43,7 @@ class CurrentUserEndpointTests(APITestCase):
         student_group = Group.objects.get(name='student')
         user.groups.add(student_group)
 
-        self.client.force_authenticate(user=user)
+        self.authenticate_with_jwt(user)
 
         response = self.client.get(self.endpoint)
 
@@ -65,7 +75,7 @@ class CurrentUserEndpointTests(APITestCase):
             avatar_url=avatar_url,
         )
 
-        self.client.force_authenticate(user=user)
+        self.authenticate_with_jwt(user)
 
         response = self.client.get(self.endpoint)
 
@@ -85,7 +95,7 @@ class CurrentUserEndpointTests(APITestCase):
             avatar_url='',
         )
 
-        self.client.force_authenticate(user=user)
+        self.authenticate_with_jwt(user)
 
         response = self.client.get(self.endpoint)
 
@@ -111,7 +121,7 @@ class CurrentUserEndpointTests(APITestCase):
             admin_group,
         )
 
-        self.client.force_authenticate(user=user)
+        self.authenticate_with_jwt(user)
 
         response = self.client.get(self.endpoint)
 
@@ -125,6 +135,44 @@ class CurrentUserEndpointTests(APITestCase):
                 'platform_admin',
                 'student',
             ],
+        )
+
+    def test_does_not_accept_session_authentication(
+        self,
+    ) -> None:
+        User.objects.create_user(
+            email='sesion@unsa.edu.pe',
+            password='Prueba123!',
+        )
+
+        logged_in = self.client.login(
+            email='sesion@unsa.edu.pe',
+            password='Prueba123!',
+        )
+
+        self.assertTrue(logged_in)
+
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+
+    def test_rejects_invalid_access_token(self) -> None:
+        self.client.credentials(
+            HTTP_AUTHORIZATION='Bearer invalid-token',
+        )
+
+        response = self.client.get(self.endpoint)
+
+        self.assertEqual(
+            response.status_code,
+            status.HTTP_401_UNAUTHORIZED,
+        )
+        self.assertIn(
+            'error',
+            response.json(),
         )
 
 
@@ -196,5 +244,5 @@ class LogoutEndpointTests(APITestCase):
 
         self.assertEqual(
             me_response.status_code,
-            status.HTTP_403_FORBIDDEN,
+            status.HTTP_401_UNAUTHORIZED,
         )

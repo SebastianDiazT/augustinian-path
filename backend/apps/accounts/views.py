@@ -8,6 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework_simplejwt.authentication import (
+    JWTAuthentication,
+)
 
 from apps.core.exceptions import Conflict
 from apps.core.openapi import success_response_schema
@@ -36,6 +39,7 @@ from .serializers import (
 
 
 class CurrentUserView(APIView):
+    authentication_classes = [JWTAuthentication]
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
@@ -46,7 +50,7 @@ class CurrentUserView(APIView):
                 component_name='CurrentUserSuccessResponse',
                 data_serializer=CurrentUserSerializer,
             ),
-            status.HTTP_403_FORBIDDEN: ApiErrorResponseSerializer,
+            status.HTTP_401_UNAUTHORIZED: ApiErrorResponseSerializer,
         },
     )
     def get(self, request: Request) -> Response:
