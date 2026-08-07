@@ -39,7 +39,7 @@ class PlatformAdminUserListEndpointTests(APITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_403_FORBIDDEN,
+            status.HTTP_401_UNAUTHORIZED,
         )
         self.assertIn('error', response.json())
 

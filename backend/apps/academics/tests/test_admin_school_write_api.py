@@ -54,7 +54,7 @@ class PlatformAdminSchoolWriteTests(APITestCase):
 
         self.assertEqual(
             response.status_code,
-            status.HTTP_403_FORBIDDEN,
+            status.HTTP_401_UNAUTHORIZED,
         )
 
     def test_rejects_student_create(self) -> None:

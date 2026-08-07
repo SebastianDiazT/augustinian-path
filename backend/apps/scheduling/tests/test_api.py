@@ -152,7 +152,7 @@ class StudentSchedulingApiTests(APITestCase):
     def test_rejects_unauthenticated_scenario_list(self) -> None:
         response = self.client.get(self.scenario_endpoint)
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_creates_scenario_for_current_student(self) -> None:
         self.authenticate()
@@ -201,10 +201,7 @@ class StudentSchedulingApiTests(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(
-            {
-                section['id']
-                for section in response.json()['data']['course_sections']
-            },
+            {section['id'] for section in response.json()['data']['course_sections']},
             {
                 str(self.programming_theory.public_id),
                 str(self.programming_lab.public_id),
@@ -403,9 +400,7 @@ class StudentSchedulingApiTests(APITestCase):
         eligibility_response = self.client.get(eligibility_endpoint)
         eligibility_by_course = {
             result['course_code']: result
-            for result in eligibility_response.json()['data'][
-                'course_eligibility'
-            ]
+            for result in eligibility_response.json()['data']['course_eligibility']
         }
 
         self.assertFalse(eligibility_by_course['CS 201']['available'])
@@ -430,11 +425,7 @@ class StudentSchedulingApiTests(APITestCase):
         )
         self.assertIn(
             'bloqueada',
-            str(
-                blocked_response.json()['error']['errors'][
-                    'curriculum_course_id'
-                ]
-            ),
+            str(blocked_response.json()['error']['errors']['curriculum_course_id']),
         )
 
         previous_period = AcademicPeriod.objects.create(

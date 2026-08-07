@@ -77,9 +77,7 @@ class GradeSimulationApiTests(APITestCase):
             weight=Decimal('0.00'),
             order=4,
         )
-        self.endpoint = (
-            f'/api/v1/grading/schemes/{self.scheme.public_id}/simulate/'
-        )
+        self.endpoint = f'/api/v1/grading/schemes/{self.scheme.public_id}/simulate/'
 
     def authenticate(self) -> None:
         self.client.force_authenticate(user=self.student)
@@ -91,7 +89,7 @@ class GradeSimulationApiTests(APITestCase):
             format='json',
         )
 
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_simulates_pending_components_without_persisting(self) -> None:
         self.authenticate()
