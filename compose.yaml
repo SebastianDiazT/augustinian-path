@@ -1,32 +1,22 @@
 services:
-  db:
+  postgres:
     image: postgres:17-alpine
+    container_name: ruta-agustina-postgres
     restart: unless-stopped
-
-    env_file:
-      - .env
-
+    environment:
+      POSTGRES_DB: ruta_agustina
+      POSTGRES_USER: ruta_agustina
+      POSTGRES_PASSWORD: ruta_agustina
     ports:
-      - "5432:5432"
-
+      - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  cache:
-    image: valkey/valkey:8-alpine
-    restart: unless-stopped
-
-    ports:
-      - "6379:6379"
-
-    healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test:
+        [
+          'CMD-SHELL',
+          'pg_isready -U ruta_agustina -d ruta_agustina',
+        ]
       interval: 5s
       timeout: 5s
       retries: 5
