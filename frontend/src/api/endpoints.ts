@@ -8,6 +8,8 @@ const apiPrefix = `/api/${apiVersion}`;
 export const apiEndpoints = {
     auth: {
         csrf: `${apiPrefix}/auth/csrf/`,
+        google: `${apiPrefix}/auth/google/`,
+        refresh: `${apiPrefix}/auth/refresh/`,
         currentUser: `${apiPrefix}/auth/me/`,
         logout: `${apiPrefix}/auth/logout/`,
     },

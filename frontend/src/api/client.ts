@@ -1,3 +1,5 @@
+import { getAccessToken } from '@/api/auth-tokens';
+
 const configuredBaseUrl = import.meta.env.VITE_API_BASE_URL?.trim();
 
 export const API_BASE_URL = (configuredBaseUrl || 'http://localhost:8000').replace(
@@ -33,13 +35,19 @@ export async function apiRequest<T>(
     path: string,
     options: RequestInit = {},
 ): Promise<T> {
+    const headers = new Headers(options.headers);
+
+    headers.set('Accept', 'application/json');
+
+    const accessToken = getAccessToken();
+
+    if (accessToken && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${accessToken}`);
+    }
+
     const response = await fetch(`${API_BASE_URL}${path}`, {
         ...options,
-        credentials: 'include',
-        headers: {
-            Accept: 'application/json',
-            ...options.headers,
-        },
+        headers,
     });
 
     const contentType = response.headers.get('content-type');
