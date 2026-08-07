@@ -10,7 +10,7 @@ User = get_user_model()
 class CurrentUserEndpointTests(APITestCase):
     endpoint = '/api/v1/auth/me/'
 
-    def authenticate_with_jwt(self, user: User) -> str:
+    def authenticate_with_jwt(self, user: User) -> str: # type: ignore
         refresh_token = RefreshToken.for_user(user)
         access_token = str(refresh_token.access_token)
 

@@ -52,6 +52,23 @@ class GoogleLoginDataSerializer(serializers.Serializer):
     is_new_user = serializers.BooleanField()
 
 
+class RefreshTokenRequestSerializer(serializers.Serializer):
+    refresh = serializers.CharField(
+        write_only=True,
+        allow_blank=False,
+        trim_whitespace=True,
+    )
+
+
+class RefreshTokenDataSerializer(serializers.Serializer):
+    access = serializers.CharField(
+        read_only=True,
+    )
+    refresh = serializers.CharField(
+        read_only=True,
+    )
+
+
 class CSRFDataSerializer(serializers.Serializer):
     csrf_cookie_set = serializers.BooleanField()
 

@@ -1,4 +1,5 @@
 from django.contrib.auth import logout
+from django.core.exceptions import ObjectDoesNotExist
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import ensure_csrf_cookie
 from drf_spectacular.utils import extend_schema
@@ -11,12 +12,20 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import (
     JWTAuthentication,
 )
+from rest_framework_simplejwt.exceptions import (
+    InvalidToken,
+    TokenError,
+)
+from rest_framework_simplejwt.serializers import (
+    TokenRefreshSerializer,
+)
 
 from apps.core.exceptions import Conflict
 from apps.core.openapi import success_response_schema
 from apps.core.responses import success_response
 from apps.core.serializers import ApiErrorResponseSerializer
 
+from .authentication import BearerChallengeAuthentication
 from .google_identity import (
     InvalidGoogleCredential,
     verify_google_credential,
@@ -35,6 +44,8 @@ from .serializers import (
     GoogleLoginDataSerializer,
     GoogleLoginRequestSerializer,
     LogoutDataSerializer,
+    RefreshTokenDataSerializer,
+    RefreshTokenRequestSerializer,
 )
 
 
@@ -127,6 +138,57 @@ class GoogleLoginView(APIView):
                 'refresh': token_pair.refresh,
                 'user': user_serializer.data,
                 'is_new_user': is_new_user,
+            },
+            request_id=request.request_id,
+        )
+
+
+class RefreshTokenView(APIView):
+    authentication_classes = [
+        BearerChallengeAuthentication,
+    ]
+    permission_classes = []
+
+    @extend_schema(
+        summary='Renovar los tokens de autenticación',
+        tags=['Autenticación'],
+        request=RefreshTokenRequestSerializer,
+        responses={
+            status.HTTP_200_OK: success_response_schema(
+                component_name='RefreshTokenSuccessResponse',
+                data_serializer=RefreshTokenDataSerializer,
+            ),
+            status.HTTP_400_BAD_REQUEST: (ApiErrorResponseSerializer),
+            status.HTTP_401_UNAUTHORIZED: (ApiErrorResponseSerializer),
+        },
+    )
+    def post(self, request: Request) -> Response:
+        request_serializer = RefreshTokenRequestSerializer(
+            data=request.data,
+        )
+        request_serializer.is_valid(
+            raise_exception=True,
+        )
+
+        token_serializer = TokenRefreshSerializer(
+            data={
+                'refresh': (request_serializer.validated_data['refresh']),
+            },
+        )
+
+        try:
+            token_serializer.is_valid(
+                raise_exception=True,
+            )
+        except (TokenError, ObjectDoesNotExist) as error:
+            raise InvalidToken() from error
+
+        refreshed_tokens = token_serializer.validated_data
+
+        return success_response(
+            data={
+                'access': refreshed_tokens['access'],
+                'refresh': refreshed_tokens['refresh'],
             },
             request_id=request.request_id,
         )
