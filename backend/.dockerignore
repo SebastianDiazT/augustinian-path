@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Entornos virtuales
+.venv/
+venv/
+
+# Variables de entorno (nunca deben terminar en la imagen)
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+
+# Testing / linting
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Django
+*.sqlite3
+media/
+staticfiles/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store

@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ruta_agustina_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-ruta_agustina}
+      POSTGRES_USER: ${DB_USER:-ruta_agustina}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ruta_agustina}
+    ports:
+      - "5432:5432"
+    volumes:
+      # Persiste los datos entre reinicios del contenedor.
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ruta_agustina}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ruta_agustina_backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      # Fuerza el host de base de datos al servicio de este mismo compose,
+      # sin importar lo que diga el .env local (que también podría usarse
+      # para correr el backend fuera de Docker, apuntando a localhost).
+      DB_HOST: db
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+
+  frontend:
+    # Placeholder: el frontend vive en su propio proyecto React (Vercel).
+    # Este servicio existe para poder levantar el stack completo en local
+    # con un único `docker compose up`. Ver frontend/README.md.
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ruta_agustina_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/app
+
+volumes:
+  postgres_data:

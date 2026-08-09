@@ -1,0 +1,52 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# --- Entornos virtuales ---
+.venv/
+venv/
+env/
+
+# Nota: uv.lock SÍ se versiona a propósito (reproducibilidad de builds en
+# una aplicación). No lo agregues aquí.
+
+# --- Django ---
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# --- Variables de entorno ---
+.env
+.env.*
+!.env.example
+
+# --- Testing ---
+.pytest_cache/
+.coverage
+htmlcov/
+
+# --- Linting ---
+.ruff_cache/
+
+# --- Docker ---
+docker-compose.override.yml
+
+# --- Editor / SO ---
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# --- Frontend (Node) ---
+node_modules/
+dist/
+.env.local
