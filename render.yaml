@@ -1,0 +1,81 @@
+services:
+  - type: web
+    name: augustinian-path-api
+    runtime: python
+    plan: free
+    region: virginia
+    rootDir: backend
+    autoDeployTrigger: "off"
+    healthCheckPath: /api/v1/health/
+
+    buildCommand: >-
+      uv sync --frozen --no-dev &&
+      uv run --frozen --no-dev
+      python manage.py collectstatic --noinput
+
+    startCommand: >-
+      uv run --frozen --no-dev
+      python manage.py migrate --noinput &&
+      uv run --frozen --no-dev
+      gunicorn config.wsgi:application
+      --bind 0.0.0.0:$PORT
+      --workers 2
+      --timeout 120
+      --access-logfile -
+      --error-logfile -
+
+    envVars:
+      - key: UV_VERSION
+        value: '0.12.1'
+
+      # Configuración de Django
+      - key: DJANGO_SETTINGS_MODULE
+        value: 'config.settings.production'
+
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+
+      - key: DJANGO_DEBUG
+        value: 'False'
+
+      - key: DJANGO_ALLOWED_HOSTS
+        fromService:
+          type: web
+          name: augustinian-path-api
+          envVarKey: RENDER_EXTERNAL_HOSTNAME
+
+      # Variables de Base de Datos individuales para Supabase (sync: false para mantenerlas secretas)
+      - key: DB_NAME
+        sync: false
+
+      - key: DB_USER
+        sync: false
+
+      - key: DB_PASSWORD
+        sync: false
+
+      - key: DB_HOST
+        sync: false
+
+      - key: DB_PORT
+        value: '6543'
+
+      - key: DB_SSLMODE
+        value: 'require'
+
+      - key: DB_CONN_MAX_AGE
+        value: '60'
+
+      # Configuración de CORS y Google
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+
+      - key: GOOGLE_OAUTH_CLIENT_SECRET
+        sync: false
+
+      # Seguridad
+      - key: SECURE_HSTS_SECONDS
+        value: '2592000'

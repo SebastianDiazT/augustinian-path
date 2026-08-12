@@ -1,0 +1,80 @@
+name: Ruta Agustina CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+    
+    # Levantamos PostgreSQL local efímero para los tests
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: ruta_agustina
+          POSTGRES_PASSWORD: ruta_agustina
+          POSTGRES_DB: ruta_agustina
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+          version: "0.12.1"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Dependencies
+        working-directory: ./backend
+        run: uv sync
+
+      - name: Run Ruff (Linter)
+        working-directory: ./backend
+        run: uv run ruff check .
+
+      - name: Run Pytest
+        working-directory: ./backend
+        env:
+          # Reflejo exacto del .env.example para entorno de desarrollo
+          DJANGO_SETTINGS_MODULE: config.settings.development
+          DJANGO_SECRET_KEY: "dummy-key-for-github-actions"
+          DB_NAME: ruta_agustina
+          DB_USER: ruta_agustina
+          DB_PASSWORD: ruta_agustina
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_SSLMODE: disable
+        # Ejecutamos las pruebas en los 4 módulos vitales para validar el 100%
+        run: |
+          uv run pytest apps/core/tests/ apps/institution/tests/ apps/accounts/tests/ apps/curricula/tests/ \
+            --cov=apps.core --cov=apps.institution --cov=apps.accounts --cov=apps.curricula
+
+  deploy:
+    name: Deploy to Render
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Trigger Render Deployment
+        run: |
+          curl -X POST -d "" ${{ secrets.RENDER_DEPLOY_HOOK }}
+          echo "Deployment triggered on Render!"
