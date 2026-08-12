@@ -1,0 +1,23 @@
+name: Keep API Alive
+
+on:
+  schedule:
+    - cron: "*/14 * * * *"
+  
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping Render Web Service
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit Health Check Endpoint
+        run: |
+          echo "Pinging the API to prevent cold start..."
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://augustinian-path-api.onrender.com/api/v1/health/)
+          echo "Response status code: $STATUS_CODE"
+          if [ "$STATUS_CODE" -eq 200 ]; then
+            echo "API is awake and healthy! 🚀"
+          else
+            echo "API returned status $STATUS_CODE. It might be waking up."
+          fi
