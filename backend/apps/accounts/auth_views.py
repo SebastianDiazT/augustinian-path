@@ -28,7 +28,7 @@ class GoogleLoginView(APIView):
                 settings.GOOGLE_OAUTH_CLIENT_ID,
             )
         except ValueError as exc:
-            raise AuthenticationFailed(f'Token de Google inválido: {exc}')
+            raise AuthenticationFailed(f'Token de Google inválido: {exc}') from exc
 
         email = payload.get('email', '')
         if not payload.get('email_verified'):

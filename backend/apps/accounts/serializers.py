@@ -164,7 +164,9 @@ class SchoolDelegationSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=SchoolDelegation.objects.all(),
                 fields=['delegate', 'school'],
-                message='Este usuario ya ha sido asignado como delegado de esta escuela profesional.',
+                message=(
+                    'Este usuario ya ha sido asignado como delegado de esta escuela profesional.'
+                ),
             )
         ]
 

@@ -24,7 +24,10 @@ class AreaViewSet(viewsets.ModelViewSet):
         if instance.faculties.filter(is_active=True).exists():
             raise ValidationError(
                 {
-                    'detail': 'No puedes desactivar esta área porque tiene facultades activas relacionadas.'
+                    'detail': (
+                        'No puedes desactivar esta área porque '
+                        'tiene facultades activas relacionadas.'
+                    )
                 }
             )
 
@@ -48,7 +51,10 @@ class FacultyViewSet(viewsets.ModelViewSet):
         if instance.professional_schools.filter(is_active=True).exists():
             raise ValidationError(
                 {
-                    'detail': 'No puedes desactivar esta facultad porque tiene escuelas profesionales activas relacionadas.'
+                    'detail': (
+                        'No puedes desactivar esta facultad porque '
+                        'tiene escuelas profesionales activas relacionadas.'
+                    )
                 }
             )
 

@@ -51,6 +51,8 @@ class ProfessionalSchoolSerializer(serializers.ModelSerializer):
             UniqueTogetherValidator(
                 queryset=ProfessionalSchool.objects.all(),
                 fields=['faculty', 'name'],
-                message='Ya existe una escuela profesional con este nombre dentro de esta facultad.',
+                message=(
+                    'Ya existe una escuela profesional con este nombre dentro de esta facultad.'
+                ),
             )
         ]
