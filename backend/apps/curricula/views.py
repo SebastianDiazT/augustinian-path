@@ -1,4 +1,5 @@
 from django.db import transaction
+from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.exceptions import PermissionDenied
@@ -118,6 +119,10 @@ class SyllabusViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
     lookup_field = 'public_id'
     filterset_fields = ['course', 'academic_term']
 
+    @extend_schema(
+        request=EvaluationComponentSerializer(many=True),
+        responses=SyllabusSerializer,
+    )
     @action(detail=True, methods=['put'], url_path='evaluation-components')
     def set_evaluation_components(self, request, public_id=None):
         syllabus = self.get_object()
