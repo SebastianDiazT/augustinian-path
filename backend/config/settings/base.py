@@ -12,6 +12,9 @@ SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
 ALLOWED_HOSTS = env.list('DJANGO_ALLOWED_HOSTS', default=[])
 
+API_VERSION = env('API_VERSION', default='v1')
+API_SEMANTIC_VERSION = env('API_SEMANTIC_VERSION', default='1.0.0')
+
 DJANGO_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -36,7 +39,7 @@ LOCAL_APPS: list[str] = [
     'apps.curricula',
     'apps.offerings',
     'apps.accounts',
-    # 'apps.academic_records',
+    'apps.academic_records',
     # 'apps.schedules',
 ]
 
@@ -148,7 +151,7 @@ REST_FRAMEWORK = {
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Ruta Agustina API',
     'DESCRIPTION': 'Academic planning platform for UNSA students.',
-    'VERSION': '1.0.0',
+    'VERSION': API_SEMANTIC_VERSION,
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
