@@ -11,7 +11,7 @@ urlpatterns = [
     path('api/v1/', include('apps.core.urls', namespace='core')),
     path('api/v1/institution/', include('apps.institution.urls', namespace='institution')),
     path('api/v1/curricula/', include('apps.curricula.urls', namespace='curricula')),
-    # path('api/v1/offerings/', include('apps.offerings.urls', namespace='offerings')),
+    path('api/v1/offerings/', include('apps.offerings.urls', namespace='offerings')),
     path('api/v1/accounts/', include('apps.accounts.urls', namespace='accounts')),
     # path(
     #     'api/v1/academic-records/',

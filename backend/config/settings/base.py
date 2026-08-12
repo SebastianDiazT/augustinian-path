@@ -34,7 +34,7 @@ LOCAL_APPS: list[str] = [
     'apps.core',
     'apps.institution',
     'apps.curricula',
-    # 'apps.offerings',
+    'apps.offerings',
     'apps.accounts',
     # 'apps.academic_records',
     # 'apps.schedules',
