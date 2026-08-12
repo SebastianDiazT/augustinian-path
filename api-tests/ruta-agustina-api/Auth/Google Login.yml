@@ -1,0 +1,30 @@
+info:
+  name: Google Login
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/accounts/auth/google/"
+  body:
+    type: json
+    data: |-
+      {
+        "id_token": "{{id_token}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+
+        bru.setGlobalEnvVar('access_token', response.data.access);
+        bru.setGlobalEnvVar('refresh_token', response.data.refresh);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

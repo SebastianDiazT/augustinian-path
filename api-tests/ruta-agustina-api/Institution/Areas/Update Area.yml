@@ -1,0 +1,21 @@
+info:
+  name: Update Area
+  type: http
+  seq: 4
+
+http:
+  method: PATCH
+  url: "{{base_url}}/institution/areas/{{area_id}}/"
+  body:
+    type: json
+    data: |-
+      {
+        "is_active": false
+      }
+  auth: inherit
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

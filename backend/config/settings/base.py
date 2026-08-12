@@ -6,9 +6,7 @@ import environ
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
-ENV_FILE = BASE_DIR / '.env'
-if ENV_FILE.exists():
-    environ.Env.read_env(str(ENV_FILE))
+environ.Env.read_env(BASE_DIR / '.env')
 
 SECRET_KEY = env.str('DJANGO_SECRET_KEY')
 DEBUG = env.bool('DJANGO_DEBUG', default=False)
@@ -25,23 +23,29 @@ DJANGO_APPS = [
 
 THIRD_PARTY_APPS = [
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
     'drf_spectacular',
-    'rest_framework_simplejwt',
-    'rest_framework_simplejwt.token_blacklist',
+    'csp',
 ]
 
 LOCAL_APPS: list[str] = [
     'apps.core',
+    'apps.institution',
+    'apps.curricula',
+    # 'apps.offerings',
+    'apps.accounts',
+    # 'apps.academic_records',
+    # 'apps.schedules',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'apps.core.middleware.RequestIdMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -49,6 +53,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
+    'apps.core.middleware.RequestIDMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -75,33 +81,28 @@ ASGI_APPLICATION = 'config.asgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': env.str('DB_NAME'),
-        'USER': env.str('DB_USER'),
-        'PASSWORD': env.str('DB_PASSWORD'),
-        'HOST': env.str('DB_HOST'),
-        'PORT': env.str('DB_PORT', default='5432'),
-        'CONN_MAX_AGE': env.int('DB_CONN_MAX_AGE', default=60),
-        'OPTIONS': {
-            'sslmode': env.str('DB_SSLMODE', default='prefer'),
-        },
-    }
+        'NAME': env('DB_NAME'),
+        'USER': env('DB_USER'),
+        'PASSWORD': env('DB_PASSWORD'),
+        'HOST': env('DB_HOST'),
+        'PORT': env('DB_PORT', default='5432'),
+    },
 }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
 
 PASSWORD_HASHERS = [
     'django.contrib.auth.hashers.Argon2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2PasswordHasher',
     'django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher',
     'django.contrib.auth.hashers.BCryptSHA256PasswordHasher',
-    'django.contrib.auth.hashers.ScryptPasswordHasher',
+]
+
+AUTH_PASSWORD_VALIDATORS = [
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
 LANGUAGE_CODE = 'es-pe'
@@ -113,59 +114,66 @@ STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
-
 CORS_ALLOW_CREDENTIALS = False
-
 CORS_URLS_REGEX = r'^/api/.*$'
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
+    'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
-    'DEFAULT_THROTTLE_CLASSES': (
-        'rest_framework.throttling.AnonRateThrottle',
-        'rest_framework.throttling.UserRateThrottle',
-    ),
-    'DEFAULT_THROTTLE_RATES': {
-        'anon': env.str('THROTTLE_RATE_ANON', default='100/day'),
-        'user': env.str('THROTTLE_RATE_USER', default='1000/day'),
-    },
+    ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAuthenticated',
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+    ],
     'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
     'DEFAULT_PAGINATION_CLASS': 'apps.core.pagination.EnvelopePageNumberPagination',
-    'PAGE_SIZE': 20,
     'DEFAULT_RENDERER_CLASSES': [
         'apps.core.renderers.EnvelopeJSONRenderer',
     ],
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(
-        minutes=env.int('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', default=30)
-    ),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=env.int('JWT_REFRESH_TOKEN_LIFETIME_DAYS', default=7)),
-    'ROTATE_REFRESH_TOKENS': True,
-    'BLACKLIST_AFTER_ROTATION': True,
-    'UPDATE_LAST_LOGIN': True,
-    'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY,
-    'AUTH_HEADER_TYPES': ('Bearer',),
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': env('THROTTLE_RATE_ANON', default='100/day'),
+        'user': env('THROTTLE_RATE_USER', default='1000/day'),
+        'login': env('THROTTLE_RATE_LOGIN', default='10/minute'),
+        'membership_request_create': env('THROTTLE_RATE_MEMBERSHIP_REQUEST', default='20/day'),
+    },
 }
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Ruta Agustina API',
-    'DESCRIPTION': (
-        'API REST de Ruta Agustina, plataforma de planificación académica '
-        'para estudiantes de la Universidad Nacional de San Agustín de Arequipa (UNSA).'
-    ),
-    'VERSION': '0.1.0',
+    'DESCRIPTION': 'Academic planning platform for UNSA students.',
+    'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env.int('JWT_ACCESS_MINUTES', default=30)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=env.int('JWT_REFRESH_DAYS', default=7)),
+    'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}
+
+GOOGLE_OAUTH_CLIENT_ID = env('GOOGLE_OAUTH_CLIENT_ID', default='')
+
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ["'self'"],
+        'script-src': ["'self'", 'https://cdn.jsdelivr.net'],
+        'style-src': ["'self'", 'https://cdn.jsdelivr.net', "'unsafe-inline'"],
+        'img-src': ["'self'", 'data:', 'https://cdn.jsdelivr.net'],
+        'font-src': ["'self'", 'https://cdn.jsdelivr.net'],
+        'connect-src': ["'self'"],
+        'frame-ancestors': ["'none'"],
+        'object-src': ["'none'"],
+        'base-uri': ["'self'"],
+    },
 }
 
 DJANGO_LOG_LEVEL = env.str('DJANGO_LOG_LEVEL', default='INFO' if DEBUG else 'WARNING')
@@ -175,30 +183,23 @@ LOGGING = {
     'disable_existing_loggers': False,
     'filters': {
         'request_id': {
-            '()': 'apps.core.logging_filters.RequestIdLogFilter',
+            '()': 'apps.core.logging_filters.RequestIDLogFilter',
         },
     },
     'formatters': {
-        'verbose': {
-            'format': '%(asctime)s %(levelname)s [request_id=%(request_id)s] %(name)s: %(message)s',
+        'default': {
+            'format': '%(asctime)s %(levelname)s [%(request_id)s] %(name)s: %(message)s',
         },
     },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
             'filters': ['request_id'],
-            'formatter': 'verbose',
+            'formatter': 'default',
         },
     },
     'root': {
         'handlers': ['console'],
-        'level': DJANGO_LOG_LEVEL,
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': DJANGO_LOG_LEVEL,
-            'propagate': False,
-        },
+        'level': env('DJANGO_LOG_LEVEL', default='INFO'),
     },
 }

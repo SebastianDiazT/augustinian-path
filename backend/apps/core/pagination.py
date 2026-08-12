@@ -43,21 +43,21 @@ class EnvelopePageNumberPagination(PageNumberPagination):
                                                 'has_previous',
                                                 self.page.has_previous(),
                                             ),
-                                        ]
+                                        ],
                                     ),
                                 ),
-                            ]
+                            ],
                         ),
                     ),
-                ]
-            )
+                ],
+            ),
         )
 
     def get_paginated_response_schema(self, schema):
         return {
             'type': 'object',
             'properties': {
-                'data': schema,
+                'data': {'type': 'array', 'items': schema},
                 'meta': {
                     'type': 'object',
                     'properties': {

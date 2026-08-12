@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Obtener Token de Google</title>
+    <!-- Cargamos la librería oficial de Google -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body style="font-family: sans-serif; padding: 20px;">
+    <h2>Inicia sesión para obtener tu token</h2>
+    
+    <!-- Configuración del botón -->
+    <div id="g_id_onload"
+         data-client_id="928849722017-k8birq2jtsjf418vfqq8dj3hnhkm5r6e.apps.googleusercontent.com"
+         data-context="signin"
+         data-ux_mode="popup"
+         data-callback="manejarRespuestaGoogle">
+    </div>
+    
+    <div class="g_id_signin" data-type="standard"></div>
+
+    <h3 style="margin-top: 20px;">Copia tu id_token aquí:</h3>
+    <textarea id="caja-token" rows="10" cols="80" placeholder="El token aparecerá aquí después de iniciar sesión..."></textarea>
+
+    <script>
+        function manejarRespuestaGoogle(response) {
+            // response.credential es el famoso "id_token"
+            document.getElementById('caja-token').value = response.credential;
+            console.log("Token obtenido exitosamente");
+        }
+    </script>
+</body>
+</html>

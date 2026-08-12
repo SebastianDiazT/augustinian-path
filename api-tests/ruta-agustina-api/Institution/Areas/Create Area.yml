@@ -1,0 +1,30 @@
+info:
+  name: Create Area
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/institution/areas/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "Área de Ingenierías",
+        "code": "ingenierias",
+        "is_active": true
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        bru.setGlobalEnvVar("area_id", response.data.public_id);
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

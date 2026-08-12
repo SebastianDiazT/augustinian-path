@@ -1,24 +1,20 @@
-import uuid
+import pytest
 
-from django.apps import apps
+from apps.institution.models import Area, Faculty, ProfessionalSchool
 
-from apps.core.models import CatalogBaseModel
-
-
-def test_catalog_base_model_is_abstract():
-    assert CatalogBaseModel._meta.abstract is True
+pytestmark = pytest.mark.django_db
 
 
-def test_catalog_base_model_has_expected_fields():
-    field_names = {f.name for f in CatalogBaseModel._meta.get_fields()}
-    assert {'public_id', 'is_active', 'created_at', 'updated_at'} <= field_names
+class TestCoreModels:
+    def test_active_manager_hides_deleted_records(self):
+        area = Area.objects.create(name='Ingenierías')
+        faculty = Faculty.objects.create(area=area, name='Sistemas')
 
-    public_id_field = CatalogBaseModel._meta.get_field('public_id')
-    assert public_id_field.unique is True
-    assert public_id_field.editable is False
-    assert public_id_field.default is uuid.uuid4
+        ProfessionalSchool.objects.create(faculty=faculty, name='Escuela Activa')
 
+        ProfessionalSchool.objects.create(faculty=faculty, name='Escuela Borrada', is_active=False)
 
-def test_core_app_registers_no_concrete_models():
-    # `core` no debe crear ninguna tabla propia en la base de datos.
-    assert list(apps.get_app_config('core').get_models()) == []
+        assert ProfessionalSchool.objects.count() == 1
+        assert ProfessionalSchool.objects.first().name == 'Escuela Activa'
+
+        assert ProfessionalSchool.all_objects.count() == 2
