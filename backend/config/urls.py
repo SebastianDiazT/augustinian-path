@@ -20,7 +20,7 @@ urlpatterns = [
         f'{api_prefix}academic-records/',
         include('apps.academic_records.urls', namespace='academic_records'),
     ),
-    # path(f'{api_prefix}schedules/', include('apps.schedules.urls', namespace='schedules')),
+    path(f'{api_prefix}schedules/', include('apps.schedules.urls', namespace='schedules')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='docs'),
     path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
