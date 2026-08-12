@@ -290,12 +290,13 @@ def describe_combination(combination, preferences):
     return ', '.join(parts).capitalize() if parts else 'Horario compacto'
 
 
-def top_alternatives(course_options_list, preferences, n=4, max_solutions=DEFAULT_MAX_SOLUTIONS, max_steps=DEFAULT_MAX_STEPS):
-    """Returns up to `n` (combination, score, description) tuples, best
-    first. `max_solutions` already keeps the candidate pool small
-    (≤200), so a plain sort here is simpler than a streaming heap and
-    costs nothing measurable."""
-
+def top_alternatives(
+        course_options_list,
+        preferences,
+        n=4,
+        max_solutions=DEFAULT_MAX_SOLUTIONS,
+        max_steps=DEFAULT_MAX_STEPS
+    ):
     combinations = search_valid_combinations(course_options_list, max_solutions, max_steps)
     scored = [
         (combo, score_combination(combo, preferences), describe_combination(combo, preferences))

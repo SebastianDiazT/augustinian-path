@@ -12,7 +12,11 @@ app_name = 'schedules'
 
 router = DefaultRouter()
 router.register('schedule-simulations', ScheduleSimulationViewSet, basename='schedule-simulation')
-router.register('schedule-alternatives', ScheduleAlternativeViewSet, basename='schedule-alternative')
+router.register(
+    'schedule-alternatives',
+    ScheduleAlternativeViewSet,
+    basename='schedule-alternative'
+)
 router.register('share-links', PublicShareLinkViewSet, basename='share-link')
 
 urlpatterns = router.urls + [

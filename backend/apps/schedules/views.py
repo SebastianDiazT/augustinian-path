@@ -1,10 +1,11 @@
-from apps.core.permissions import IsOwnerStudent
 from drf_spectacular.utils import extend_schema
 from rest_framework import mixins, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, BasePermission, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from apps.core.permissions import IsOwnerStudent
 
 from .models import PublicShareLink, ScheduleAlternative, ScheduleSimulation
 from .serializers import (
