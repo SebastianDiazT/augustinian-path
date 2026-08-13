@@ -1,5 +1,7 @@
-from django.db import migrations
 from datetime import time
+
+from django.db import migrations
+
 
 def create_time_blocks(apps, schema_editor):
     TimeBlock = apps.get_model('offerings', 'TimeBlock')
@@ -22,8 +24,13 @@ def create_time_blocks(apps, schema_editor):
     ]
 
     for order, start, end in blocks:
-        if not TimeBlock.objects.filter(order=order).exists():
-            TimeBlock.objects.create(order=order, start_time=start, end_time=end)
+        TimeBlock.all_objects.get_or_create(
+            order=order,
+            defaults={
+                'start_time': start,
+                'end_time': end,
+            },
+        )
 
 
 class Migration(migrations.Migration):
