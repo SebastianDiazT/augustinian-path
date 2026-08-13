@@ -2,9 +2,8 @@ from django.db import migrations
 from datetime import time
 
 def create_time_blocks(apps, schema_editor):
-    # Obtenemos el modelo histórico correcto para las migraciones
     TimeBlock = apps.get_model('offerings', 'TimeBlock')
-    
+
     blocks = [
         (1, time(7, 0), time(7, 50)),
         (2, time(7, 50), time(8, 40)),
@@ -21,10 +20,8 @@ def create_time_blocks(apps, schema_editor):
         (13, time(17, 40), time(18, 30)),
         (14, time(18, 30), time(19, 20)),
     ]
-    
+
     for order, start, end in blocks:
-        # Usamos filter().exists() en lugar de get_or_create porque 
-        # get_or_create a veces da problemas en las migraciones de datos
         if not TimeBlock.objects.filter(order=order).exists():
             TimeBlock.objects.create(order=order, start_time=start, end_time=end)
 
@@ -32,9 +29,7 @@ def create_time_blocks(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        # IMPORTANTE: Aquí estará el nombre de tu migración anterior
-        # No borres lo que Django haya puesto aquí automáticamente.
-        ('offerings', '0001_initial'), 
+        ('offerings', '0002_alter_offering_options_alter_section_options'),
     ]
 
     operations = [
