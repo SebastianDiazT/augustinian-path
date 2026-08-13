@@ -11,6 +11,7 @@ class Area(CatalogBaseModel):
         db_table = 'institution_area'
         verbose_name = 'Área'
         verbose_name_plural = 'Áreas'
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.name
@@ -25,6 +26,7 @@ class Faculty(CatalogBaseModel):
         db_table = 'institution_faculty'
         verbose_name = 'Facultad'
         verbose_name_plural = 'Facultades'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['area', 'name'],
@@ -49,6 +51,7 @@ class ProfessionalSchool(CatalogBaseModel):
         db_table = 'institution_professional_school'
         verbose_name = 'Escuela Profesional'
         verbose_name_plural = 'Escuelas Profesionales'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['faculty', 'name'],

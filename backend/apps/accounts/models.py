@@ -45,6 +45,7 @@ class User(AbstractBaseUser, PermissionsMixin, CatalogBaseModel):
         db_table = 'accounts_user'
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.email
@@ -76,6 +77,7 @@ class StudentProfile(CatalogBaseModel):
         db_table = 'accounts_student_profile'
         verbose_name = 'Perfil de estudiante'
         verbose_name_plural = 'Perfiles de estudiante'
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.user.email} (CUI {self.cui})'
@@ -116,6 +118,7 @@ class SchoolMembership(CatalogBaseModel):
         db_table = 'accounts_school_membership'
         verbose_name = 'Membresía de escuela'
         verbose_name_plural = 'Membresías de escuela'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['student', 'school'],
@@ -174,6 +177,7 @@ class MembershipRequest(CatalogBaseModel):
         db_table = 'accounts_membership_request'
         verbose_name = 'Solicitud de membresía'
         verbose_name_plural = 'Solicitudes de membresía'
+        ordering = ['-created_at']
 
     def __str__(self):
         return f'{self.student} → {self.school} ({self.status})'
@@ -201,6 +205,7 @@ class SchoolDelegation(CatalogBaseModel):
         db_table = 'accounts_school_delegation'
         verbose_name = 'Delegación de escuela'
         verbose_name_plural = 'Delegaciones de escuela'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['delegate', 'school'],

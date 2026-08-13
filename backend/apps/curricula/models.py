@@ -24,6 +24,7 @@ class CurriculumPlan(CatalogBaseModel):
         db_table = 'curricula_curriculum_plan'
         verbose_name = 'Plan Curricular'
         verbose_name_plural = 'Planes Curriculares'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['school', 'year'],
@@ -50,6 +51,7 @@ class ElectiveBranch(CatalogBaseModel):
         db_table = 'curricula_elective_branch'
         verbose_name = 'Rama Electiva'
         verbose_name_plural = 'Ramas Electivas'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['curriculum_plan', 'name'],
@@ -111,6 +113,7 @@ class Course(CatalogBaseModel):
         db_table = 'curricula_course'
         verbose_name = 'Asignatura'
         verbose_name_plural = 'Asignaturas'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['curriculum_plan', 'code'],
@@ -145,6 +148,7 @@ class Prerequisite(CatalogBaseModel):
         db_table = 'curricula_prerequisite'
         verbose_name = 'Prerrequisito'
         verbose_name_plural = 'Prerrequisitos'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['course', 'required_course'],
@@ -176,6 +180,7 @@ class AcademicTerm(CatalogBaseModel):
         db_table = 'curricula_academic_term'
         verbose_name = 'Periodo Académico'
         verbose_name_plural = 'Periodos Académicos'
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.code
@@ -188,6 +193,7 @@ class Instructor(CatalogBaseModel):
         db_table = 'curricula_instructor'
         verbose_name = 'Docente'
         verbose_name_plural = 'Docentes'
+        ordering = ['-created_at']
 
     def __str__(self):
         return self.full_name
@@ -218,6 +224,7 @@ class Syllabus(CatalogBaseModel):
         db_table = 'curricula_syllabus'
         verbose_name = 'Sílabo'
         verbose_name_plural = 'Sílabos'
+        ordering = ['-created_at']
         constraints = [
             models.UniqueConstraint(
                 fields=['course', 'academic_term'],

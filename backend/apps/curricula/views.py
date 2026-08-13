@@ -29,6 +29,7 @@ from .serializers import (
     SyllabusSerializer,
     validate_component_weights_sum_to_100,
 )
+from .storage import get_syllabus_upload_url
 
 
 class _IsAdminOrDelegateOfRelatedSchool(IsSchoolDelegate):
@@ -140,3 +141,23 @@ class SyllabusViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
 
         syllabus.refresh_from_db()
         return Response(SyllabusSerializer(syllabus).data)
+
+    @action(detail=True, methods=['post'], url_path='get-upload-url')
+    def get_upload_url(self, request, public_id=None):
+        syllabus = self.get_object()
+
+        urls = get_syllabus_upload_url(syllabus)
+
+        syllabus.pdf_url = urls['public_url']
+        syllabus.save(update_fields=['pdf_url'])
+
+        return Response(
+            {
+                'upload_url': urls['upload_url'],
+                'public_url': urls['public_url'],
+                'instructions': (
+                    'Haz una petición PUT directamente a upload_url enviando '
+                    'el archivo PDF en el body.'
+                ),
+            }
+        )
