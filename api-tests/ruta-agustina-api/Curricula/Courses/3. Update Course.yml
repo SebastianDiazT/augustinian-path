@@ -1,0 +1,33 @@
+info:
+  name: 3. Update Course
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{base_url}}/curricula/courses/{{course_id}}/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "TECNOLOGÍAS DE INFORMACIÓN (Editado)"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("Name is successfully updated", function() {
+          const response = res.getBody();
+          expect(response.data.name).to.equal("TECNOLOGÍAS DE INFORMACIÓN (Editado)");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

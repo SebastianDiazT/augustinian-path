@@ -20,8 +20,10 @@ runtime:
       code: |-
         const response = res.getBody();
 
-        bru.setGlobalEnvVar('access_token', response.data.access);
-        bru.setGlobalEnvVar('refresh_token', response.data.refresh);
+        if (res.getStatus() === 200 && response.data.access) {
+            bru.setEnvVar("access_token", response.data.access);
+            bru.setEnvVar("refresh_token", response.data.refresh);
+        }
 
 settings:
   encodeUrl: true

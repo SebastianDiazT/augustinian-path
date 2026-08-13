@@ -1,0 +1,56 @@
+info:
+  name: 1. Create Course
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/curricula/courses/"
+  body:
+    type: json
+    data: |-
+      {
+        "curriculum_plan": "{{plan_id}}",
+        "code": "1704147",
+        "name": "TECNOLOGIAS DE INFORMACION",
+        "credits": "4.0",
+        "theory_hours": 2,
+        "practice_hours": 0,
+        "seminar_hours": 0,
+        "theory_practice_hours": 0,
+        "lab_hours": 4,
+        "cycle": 1,
+        "course_type": "mandatory",
+        "academic_area": "specialty",
+        "branch": null,
+        "min_credits_required": null
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("course_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("Course is linked to Plan correctly", function() {
+          const response = res.getBody();
+          expect(response.data.curriculum_plan).to.equal(bru.getEnvVar("plan_id"));
+        });
+        test("has_lab is calculated correctly", function() {
+          const response = res.getBody();
+          expect(response.data.has_lab).to.be.true;
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,38 @@
+info:
+  name: 1. Create Section
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/offerings/sections/"
+  body:
+    type: json
+    data: |-
+      {
+        "offering": "{{offering_id}}",
+        "section_type": "theory",
+        "number": "A",
+        "instructor": "{{instructor_id}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("section_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

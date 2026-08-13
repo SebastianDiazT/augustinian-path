@@ -1,0 +1,29 @@
+info:
+  name: 5. List Syllabi
+  type: http
+  seq: 5
+
+http:
+  method: GET
+  url: "{{base_url}}/curricula/syllabi/?course={{course_id}}&academic_term={{term_id}}"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("Data is an array and Meta has pagination", function() {
+          const response = res.getBody();
+          expect(response.data).to.be.an('array');
+          expect(response.meta).to.have.property('pagination');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

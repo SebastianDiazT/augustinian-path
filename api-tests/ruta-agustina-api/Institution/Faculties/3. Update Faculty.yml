@@ -1,0 +1,34 @@
+info:
+  name: 3. Update Faculty
+  type: http
+  seq: 3
+
+http:
+  method: PATCH
+  url: "{{base_url}}/institution/faculties/{{faculty_id}}/"
+  body:
+    type: json
+    data: |-
+      {
+        "name": "FIPS (Actualizado)"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("Name is successfully updated", function() {
+          const response = res.getBody();
+          expect(response.data.name).to.equal("FIPS (Actualizado)");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

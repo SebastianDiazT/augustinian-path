@@ -1,0 +1,32 @@
+info:
+  name: 5. Set Lab Meetings
+  type: http
+  seq: 5
+
+http:
+  method: PUT
+  url: "{{base_url}}/offerings/sections/{{lab_section_id}}/meetings/"
+  body:
+    type: json
+    data: |-
+      [
+        {"day_of_week": "tuesday", "time_block": "{{time_block_id}}", "room": "Lab 01"},
+        {"day_of_week": "thursday", "time_block": "{{time_block_id}}", "room": "Lab 01"},
+        {"day_of_week": "friday", "time_block": "{{time_block_id}}", "room": "Lab 01"},
+        {"day_of_week": "saturday", "time_block": "{{time_block_id}}", "room": "Lab 01"}
+      ]
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

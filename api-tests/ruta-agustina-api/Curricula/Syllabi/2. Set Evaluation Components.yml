@@ -1,0 +1,35 @@
+info:
+  name: 2. Set Eval Components
+  type: http
+  seq: 2
+
+http:
+  method: PUT
+  url: "{{base_url}}/curricula/syllabi/{{syllabus_id}}/evaluation-components/"
+  body:
+    type: json
+    data: |-
+      [
+        {"name": "EVALUACION CONTINUA 1", "weight": "30.00", "order": 1},
+        {"name": "EVALUACION CONTINUA 2", "weight": "30.00", "order": 2},
+        {"name": "EXAMEN FINAL", "weight": "40.00", "order": 3}
+      ]
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("Evaluation components are saved", function() {
+          const response = res.getBody();
+          expect(response.data.evaluation_components.length).to.equal(3);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

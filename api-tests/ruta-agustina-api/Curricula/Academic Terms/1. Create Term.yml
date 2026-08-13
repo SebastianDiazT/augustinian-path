@@ -1,0 +1,41 @@
+info:
+  name: 1. Create Term
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/curricula/academic-terms/"
+  body:
+    type: json
+    data: |-
+      {
+        "code": "2026-A",
+        "start_date": "2026-03-01",
+        "end_date": "2026-07-15"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("term_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("Term code is correct", function() {
+          const response = res.getBody();
+          expect(response.data.code).to.equal("2026-A");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

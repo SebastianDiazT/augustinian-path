@@ -1,0 +1,38 @@
+info:
+  name: 2. Request Membership
+  type: http
+  seq: 2
+
+http:
+  method: POST
+  url: "{{base_url}}/accounts/membership-requests/"
+  body:
+    type: json
+    data: |-
+      {
+        "school": "{{school_id}}",
+        "curriculum_plan": "{{plan_id}}",
+        "request_type": "initial_request",
+        "evidencia_url": "https://mibucket.com/mi_matricula.pdf"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("request_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

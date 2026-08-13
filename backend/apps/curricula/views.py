@@ -1,4 +1,5 @@
 from django.db import transaction
+from django_filters import rest_framework as filters
 from drf_spectacular.utils import extend_schema
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -31,6 +32,30 @@ from .serializers import (
 )
 from .storage import get_syllabus_upload_url
 
+
+class CourseFilter(filters.FilterSet):
+    curriculum_plan = filters.UUIDFilter(field_name='curriculum_plan__public_id')
+
+    class Meta:
+        model = Course
+        fields = ['curriculum_plan', 'cycle', 'course_type']
+
+
+class ElectiveBranchFilter(filters.FilterSet):
+    curriculum_plan = filters.UUIDFilter(field_name='curriculum_plan__public_id')
+
+    class Meta:
+        model = ElectiveBranch
+        fields = ['curriculum_plan']
+
+
+class SyllabusFilter(filters.FilterSet):
+    course = filters.UUIDFilter(field_name='course__public_id')
+    academic_term = filters.UUIDFilter(field_name='academic_term__public_id')
+
+    class Meta:
+        model = Syllabus
+        fields = ['course', 'academic_term']
 
 class _IsAdminOrDelegateOfRelatedSchool(IsSchoolDelegate):
     def has_object_permission(self, request, view, obj):
@@ -69,14 +94,14 @@ class CourseViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
     queryset = Course.objects.filter(is_active=True).select_related('curriculum_plan', 'branch')
     serializer_class = CourseSerializer
     lookup_field = 'public_id'
-    filterset_fields = ['curriculum_plan', 'cycle', 'course_type']
+    filterset_class = CourseFilter
 
 
 class ElectiveBranchViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
     queryset = ElectiveBranch.objects.filter(is_active=True).select_related('curriculum_plan')
     serializer_class = ElectiveBranchSerializer
     lookup_field = 'public_id'
-    filterset_fields = ['curriculum_plan']
+    filterset_class = ElectiveBranchFilter
 
 
 class PrerequisiteViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
@@ -118,7 +143,7 @@ class SyllabusViewSet(_CatalogWritePermissionMixin, viewsets.ModelViewSet):
     )
     serializer_class = SyllabusSerializer
     lookup_field = 'public_id'
-    filterset_fields = ['course', 'academic_term']
+    filterset_class = SyllabusFilter
 
     @extend_schema(
         request=EvaluationComponentSerializer(many=True),

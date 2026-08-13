@@ -1,0 +1,36 @@
+info:
+  name: 3. Create Share Link
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/schedules/share-links/"
+  body:
+    type: json
+    data: |-
+      {
+        "alternative": "{{alternative_id}}",
+        "include_personal_info": true
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("share_link_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

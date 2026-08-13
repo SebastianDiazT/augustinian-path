@@ -1,0 +1,36 @@
+info:
+  name: 1. Create Offering
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/offerings/offerings/"
+  body:
+    type: json
+    data: |-
+      {
+        "course": "{{course_id}}",
+        "academic_term": "{{term_id}}"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("offering_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

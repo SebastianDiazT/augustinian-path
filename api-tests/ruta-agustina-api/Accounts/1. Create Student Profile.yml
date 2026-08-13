@@ -1,0 +1,33 @@
+info:
+  name: 1. Create Student Profile
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/accounts/student-profiles/me/"
+  body:
+    type: json
+    data: |-
+      {
+        "cui": "20222060"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 or 201", function() {
+          expect([200, 201]).to.include(res.getStatus());
+        });
+        test("CUI is successfully saved", function() {
+          const response = res.getBody();
+          expect(response.data.cui).to.equal("20222060");
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

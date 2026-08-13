@@ -1,0 +1,50 @@
+info:
+  name: 1. Generate Schedule
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/schedules/schedule-simulations/generate/"
+  body:
+    type: json
+    data: |-
+      {
+        "academic_term": "{{term_id}}",
+        "offerings": [
+          "{{offering_id}}"
+        ],
+        "preferences": {
+          "maximize_free_days": true
+        }
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        // El generador devuelve un array de simulaciones. Extraemos el ID de la primera alternativa generada.
+        if (res.getStatus() === 201 && response.data && response.data.length > 0) {
+            const simulation = response.data[0];
+            if (simulation.alternatives && simulation.alternatives.length > 0) {
+                bru.setEnvVar("alternative_id", simulation.alternatives[0].public_id);
+            }
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("Returns schedule alternatives", function() {
+          const response = res.getBody();
+          expect(response.data).to.be.an('array');
+          expect(response.data[0]).to.have.property('alternatives');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

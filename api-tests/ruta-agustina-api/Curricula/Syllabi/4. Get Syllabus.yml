@@ -1,0 +1,32 @@
+info:
+  name: 4. Get Syllabus
+  type: http
+  seq: 4
+
+http:
+  method: GET
+  url: "{{base_url}}/curricula/syllabi/{{syllabus_id}}/"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+
+        test("Data contains the created Syllabus", function() {
+          const response = res.getBody();
+          expect(response.data.public_id).to.equal(bru.getEnvVar("syllabus_id"));
+          expect(response.data.course).to.equal(bru.getEnvVar("course_id"));
+          
+          // Además, podemos verificar que los componentes de evaluación viajan incrustados
+          expect(response.data).to.have.property('evaluation_components');
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

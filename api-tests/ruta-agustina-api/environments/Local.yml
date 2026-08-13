@@ -1,0 +1,38 @@
+name: Local
+variables:
+  - name: base_url
+    value: http://localhost:8000/api/v1
+  - name: refresh_token
+    value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoicmVmcmVzaCIsImV4cCI6MTc4NzIwMTcxNiwiaWF0IjoxNzg2NTk2OTE2LCJqdGkiOiJjNGE0ZWE3MDg1NDY0MDM0YmJjMjcwMDczYTExOGZjNCIsInVzZXJfaWQiOiIxIn0.JDdstnWj5TgiIk7dxC1Ro83yf0LAXRfjf-pE9yMYxnc
+  - name: area_id
+    value: 09908299-62c6-4cbd-bee4-45e5518fb853
+  - name: faculty_id
+    value: b7328afc-a2d5-41fb-a26f-f389ba7d4a17
+  - secret: true
+    name: access_token
+  - name: school_id
+    value: af34bc33-4303-49fc-9d4c-daa6cf352382
+  - name: plan_id
+    value: 874e97cd-bd06-48bb-b370-4c407d95e127
+  - name: course_id
+    value: 60f9889c-d329-44c1-9df9-1dcd5e8bf685
+  - name: term_id
+    value: 19109ea0-a32e-4dfc-a5b3-a8a35176eca6
+  - name: instructor_id
+    value: b233ee3d-ac36-4555-b89c-746d99b3a803
+  - name: syllabus_id
+    value: c00e090b-65c4-49cc-af46-5e398be6cd53
+  - name: offering_id
+    value: ae164c47-a337-46bc-8f94-d74ae13b3818
+  - name: section_id
+    value: cf8a3d0c-ed65-4d3d-ad02-935c8146e7b5
+  - name: time_block_id
+    value: 0699d734-a97b-422c-96a4-854925093ed3
+  - name: request_id
+    value: eff49e92-24d2-4ae0-9675-3f1581b0e390
+  - name: lab_section_id
+    value: 7dd31d6d-8afb-4d4e-91e2-92926d03837a
+  - name: alternative_id
+    value: 09ebb09f-b313-4a45-8bac-4c4a3eb6a916
+  - name: share_link_id
+    value: 71d54718-2d66-4f8b-97f0-229abc52d914

@@ -1,0 +1,31 @@
+info:
+  name: 3. Get Upload URL
+  type: http
+  seq: 3
+
+http:
+  method: POST
+  url: "{{base_url}}/curricula/syllabi/{{syllabus_id}}/get-upload-url/"
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: tests
+      code: |-
+        test("Status code is 200 OK", function() {
+          expect(res.getStatus()).to.equal(200);
+        });
+        test("Response contains Supabase signed URL", function() {
+          const response = res.getBody();
+          expect(response.data).to.have.property('upload_url');
+          expect(response.data).to.have.property('public_url');
+          
+          // Imprimimos la URL en la consola de Bruno para ver cómo quedó el nombre
+          console.log("Upload URL generada:", response.data.upload_url);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

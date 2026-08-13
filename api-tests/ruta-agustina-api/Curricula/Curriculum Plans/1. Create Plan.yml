@@ -1,0 +1,43 @@
+info:
+  name: 1. Create Plan
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/curricula/curriculum-plans/"
+  body:
+    type: json
+    data: |-
+      {
+        "school": "{{school_id}}",
+        "year": "2026",
+        "name": "Plan de Estudios 2026",
+        "min_elective_branches_to_complete": 2,
+        "total_credits_required": "220.0"
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("plan_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+        test("Plan is linked to School correctly", function() {
+          const response = res.getBody();
+          expect(response.data.school).to.equal(bru.getEnvVar("school_id"));
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

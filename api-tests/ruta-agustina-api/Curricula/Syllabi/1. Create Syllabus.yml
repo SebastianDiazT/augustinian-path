@@ -1,0 +1,49 @@
+info:
+  name: 1. Create Syllabus
+  type: http
+  seq: 1
+
+http:
+  method: POST
+  url: "{{base_url}}/curricula/syllabi/"
+  body:
+    type: json
+    data: |-
+      {
+        "course": "{{course_id}}",
+        "academic_term": "{{term_id}}",
+        "instructors": [
+          "{{instructor_id}}"
+        ],
+        "description": "Curso introductorio a las Tecnologías de Información.",
+        "competencies": "Comprende la arquitectura de computadoras y redes.",
+        "thematic_content": "Hardware, Software, Redes, Base de Datos.",
+        "methodology": "Clases magistrales y laboratorios.",
+        "evaluation_criteria": "Evaluación continua y exámenes.",
+        "weekly_plan": "Semana 1 a 17...",
+        "bibliography": "Fundamentos de TI, 2026.",
+        "resources": "Proyector, PC, Laboratorio.",
+        "lab_practice_info": "Prácticas semanales evaluadas.",
+        "institutional_references": "Reglamento de Estudiantes."
+      }
+  auth: inherit
+
+runtime:
+  scripts:
+    - type: after-response
+      code: |-
+        const response = res.getBody();
+        if (res.getStatus() === 201 && response.data.public_id) {
+            bru.setEnvVar("syllabus_id", response.data.public_id);
+        }
+    - type: tests
+      code: |-
+        test("Status code is 201 Created", function() {
+          expect(res.getStatus()).to.equal(201);
+        });
+
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5
