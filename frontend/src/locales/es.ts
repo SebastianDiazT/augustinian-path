@@ -21,6 +21,8 @@ export const ES_UI = {
     navigation: {
         login: 'Iniciar sesión',
         loginMobile: 'Ingresar',
+        goToDashboard: 'Ir a mi panel',
+        goToDashboardMobile: 'Panel',
     },
     marketing: {
         seo: {
@@ -33,7 +35,8 @@ export const ES_UI = {
         heroTitleHighlight: 'con claridad',
         heroSubtitle:
             'Organiza tus cursos, explora tu malla curricular y construye un horario que se adapte a tus objetivos.',
-        heroCta: 'Iniciar sesión',
+        heroCta: 'Comenzar ahora',
+        heroCtaAuth: 'Continuar a mi panel',
         heroSecondaryCta: 'Explorar funciones',
         heroDisclaimer:
             'Accede con tu cuenta institucional. Si es tu primera vez, crearemos tu cuenta automáticamente.',
@@ -76,6 +79,7 @@ export const ES_UI = {
             description:
                 'Deja de adivinar qué cursos puedes llevar. Accede ahora con tu correo institucional y arma tu horario en minutos.',
             button: 'Ingresar a la plataforma',
+            buttonAuth: 'Ir a mi panel',
         },
     },
     footer: {
@@ -260,6 +264,49 @@ export const ES_UI = {
             changes: {
                 title: 'Cambios a estos términos',
                 p1: 'Podemos actualizar estos términos para reflejar cambios funcionales, técnicos o normativos. La versión vigente será la publicada en esta página.',
+            },
+        },
+    },
+    auth: {
+        login: {
+            seo: {
+                title: 'Iniciar Sesión',
+                description: 'Accede a Ruta Agustina con tu correo institucional.',
+            },
+            title: 'Bienvenido de vuelta',
+            subtitle:
+                'Ingresa con tu correo institucional de la UNSA para continuar con tu planificación.',
+            googleBtn: 'Continuar con Google',
+            backToHome: 'Volver al inicio',
+            previewWidget: {
+                title: 'Malla curricular inteligente',
+                description:
+                    'Visualiza tus prerrequisitos, simula escenarios y descubre tu camino óptimo hacia la graduación.',
+                nodes: {
+                    done1: 'Programación Básica',
+                    done2: 'Cálculo I',
+                    done3: 'Álgebra Lineal',
+                    current1: 'Estructuras de Datos',
+                    current2: 'Cálculo II',
+                    current3: 'Física I',
+                    locked1: 'Bases de Datos',
+                    locked2: 'Ecuaciones Diferenciales',
+                    locked3: 'Física II',
+                    locked4: 'Ingeniería de Software',
+                    locked5: 'Sistemas Operativos',
+                    locked6: 'Inteligencia Artificial',
+                },
+                status: {
+                    done: 'Aprobado',
+                    current: 'Habilitado',
+                    locked: 'Prerrequisito',
+                },
+            },
+            errors: {
+                invalidDomain:
+                    'Acceso denegado. Por favor, utiliza tu correo institucional (@unsa.edu.pe).',
+                networkError: 'Error de conexión. Revisa tu internet e inténtalo de nuevo.',
+                default: 'Ocurrió un error al intentar iniciar sesión. Inténtalo más tarde.',
             },
         },
     },

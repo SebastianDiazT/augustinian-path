@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PublicLayout from './layouts/public-layout';
 import { PageLoader } from '@/components/ui/page-loader';
+import { GuestRoute } from '@/components/navigation/guest-route';
 
 const HomePage = lazy(() => import('@/pages/public/home-page'));
 const LoginPage = lazy(() => import('@/pages/auth/login-page'));
@@ -24,7 +25,9 @@ export function AppRouter() {
                     <Route path='/support' element={<SupportPage />} />
                 </Route>
 
-                <Route path='/login' element={<LoginPage />} />
+                <Route element={<GuestRoute />}>
+                    <Route path='/login' element={<LoginPage />} />
+                </Route>
 
                 <Route path='/403' element={<ForbiddenPage />} />
 

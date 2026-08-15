@@ -6,11 +6,6 @@ export const publicPaths = {
     support: '/support',
 } as const;
 
-export const studentPaths = {
-    dashboard: '/student/schedule',
-    progress: '/student/progress',
-} as const;
-
-export const adminPaths = {
-    dashboard: '/admin',
-} as const;
+export const privatePaths = {
+    dashboard: '/student/dashboard',
+};

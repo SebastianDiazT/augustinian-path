@@ -1,13 +1,16 @@
 import { ArrowDown, ArrowRight, CalendarDays, Network, Sparkles, BookOpenCheck, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { publicPaths } from '@/app/paths';
+import { publicPaths, privatePaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { FeatureCard } from '@/components/marketing/feature-card';
 import { Button } from '@/components/ui/button';
 import { HeroProductPreview } from '@/components/marketing/hero-product-preview';
 import { SEO } from '@/components/seo';
+import { useAuthStore } from '@/store/auth-store';
 
 export default function HomePage() {
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
     const scrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
         e.preventDefault();
         document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
@@ -43,13 +46,19 @@ export default function HomePage() {
                         </p>
 
                         <div className='mt-8 flex flex-col gap-3 sm:flex-row sm:items-center'>
-                            <Link to={publicPaths.login} className='w-full sm:w-auto'>
+                            <Link to={isAuthenticated ? privatePaths.dashboard : publicPaths.login} className='w-full sm:w-auto'>
                                 <Button
                                     size='lg'
                                     className='w-full h-12 rounded-xl px-6 text-sm font-extrabold shadow-md transition-transform hover:scale-[1.02] active:scale-95'
                                 >
-                                    {ES_UI.marketing.heroCta}
-                                    <LogIn className='ml-2 size-4' aria-hidden='true' />
+                                    {isAuthenticated
+                                        ? ES_UI.marketing.heroCtaAuth
+                                        : ES_UI.marketing.heroCta}
+                                    {isAuthenticated ? (
+                                        <ArrowRight className='ml-2 size-4' aria-hidden='true' />
+                                    ) : (
+                                        <LogIn className='ml-2 size-4' aria-hidden='true' />
+                                    )}
                                 </Button>
                             </Link>
 
@@ -130,16 +139,25 @@ export default function HomePage() {
                         {ES_UI.marketing.bottomCta.description}
                     </p>
                     <div className='mt-10 flex justify-center'>
-                        <Link to={publicPaths.login}>
+                        <Link to={isAuthenticated ? privatePaths.dashboard : publicPaths.login}>
                             <Button
                                 size='lg'
                                 className='h-14 rounded-2xl px-10 text-base font-bold shadow-lg transition-transform hover:scale-[1.03] active:scale-95'
                             >
-                                {ES_UI.marketing.bottomCta.button}
-                                <ArrowRight
-                                    className='ml-2 size-4 shrink-0 transition-transform hover:translate-x-1'
-                                    aria-hidden='true'
-                                />
+                                {isAuthenticated
+                                    ? ES_UI.marketing.bottomCta.buttonAuth
+                                    : ES_UI.marketing.bottomCta.button}
+                                {isAuthenticated ? (
+                                    <ArrowRight
+                                        className='ml-2 size-4 shrink-0 transition-transform hover:translate-x-1'
+                                        aria-hidden='true'
+                                    />
+                                ) : (
+                                    <LogIn
+                                        className='ml-2 size-4 shrink-0 transition-transform hover:translate-x-1'
+                                        aria-hidden='true'
+                                    />
+                                )}
                             </Button>
                         </Link>
                     </div>
