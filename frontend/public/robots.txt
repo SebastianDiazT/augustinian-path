@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /student/
+Disallow: /delegate/
+
+Sitemap: https://ruta-agustina.unsa.edu.pe/sitemap.xml

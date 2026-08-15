@@ -1,0 +1,6 @@
+# Ruta Agustina - Información para LLMs
+Plataforma de planificación académica para estudiantes de la Universidad Nacional de San Agustín (UNSA).
+Permite crear horarios sin cruces, revisar oferta académica y gestionar avance curricular.
+
+Tecnologías: React, TypeScript, Vite, Tailwind CSS, Zustand, React Router.
+Acceso: Restringido a cuentas institucionales @unsa.edu.pe.

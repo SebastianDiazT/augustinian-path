@@ -10,7 +10,6 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      # Persiste los datos entre reinicios del contenedor.
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-ruta_agustina}"]
@@ -27,9 +26,6 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      # Fuerza el host de base de datos al servicio de este mismo compose,
-      # sin importar lo que diga el .env local (que también podría usarse
-      # para correr el backend fuera de Docker, apuntando a localhost).
       DB_HOST: db
     depends_on:
       db:
@@ -40,20 +36,20 @@ services:
       - ./backend:/app
 
   frontend:
-    # Placeholder: el frontend vive en su propio proyecto React (Vercel).
-    # Este servicio existe para poder levantar el stack completo en local
-    # con un único `docker compose up`. Ver frontend/README.md.
     build:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ruta_agustina_frontend
-    restart: unless-stopped
-    depends_on:
-      - backend
-    ports:
-      - "5173:5173"
+    command: pnpm dev --host 0.0.0.0
     volumes:
       - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - '5173:5173'
+    env_file:
+      - ./frontend/.env
+    depends_on:
+      - backend
 
 volumes:
   postgres_data:

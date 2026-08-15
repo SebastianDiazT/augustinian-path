@@ -1,0 +1,16 @@
+allowBuilds:
+  msw: set this to true or false
+
+minimumReleaseAge: 10080
+
+minimumReleaseAgeExclude:
+  - '@testing-library/jest-dom@7.0.1'
+  - '@testing-library/user-event@14.6.4'
+  - framer-motion@13.1.0
+  - lucide-react@1.31.0
+  - morphicons@1.6.0
+  - motion@13.1.0
+  - react-hook-form@7.85.0
+  - shadcn@4.17.0
+  - sonner@2.0.8
+  - zustand@5.0.15

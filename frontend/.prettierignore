@@ -1,0 +1,21 @@
+# Dependencias
+node_modules/
+.pnpm-store/
+
+# Builds y temporales de Vite
+dist/
+dist-ssr/
+build/
+
+# Archivos de entorno y logs
+.env
+.env.*
+*.log
+
+# Archivos auto-generados y de configuración estricta
+pnpm-lock.yaml
+components.json
+src/api/schema.d.ts
+
+# Cobertura de tests
+coverage/

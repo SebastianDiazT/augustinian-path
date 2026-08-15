@@ -1,7 +1,17 @@
-# Placeholder — reemplazar por el Dockerfile real del proyecto frontend
-# (React + Vite, desplegado normalmente en Vercel). Este archivo existe
-# únicamente para que `docker compose up` levante el stack completo desde
-# el mismo compose sin fallar mientras el frontend aún no vive aquí.
 FROM node:22-alpine
+
+RUN corepack enable
+
 WORKDIR /app
-CMD ["sh", "-c", "echo 'Frontend placeholder: reemplaza este servicio con el proyecto real.' && sleep infinity"]
+
+ENV CI=true
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+
+RUN pnpm install --frozen-lockfile --ignore-scripts
+
+COPY . .
+
+EXPOSE 5173
+
+CMD ["pnpm", "dev", "--", "--host", "0.0.0.0"]
