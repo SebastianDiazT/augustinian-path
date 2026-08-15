@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ShieldCheck, Info } from 'lucide-react';
 import { publicPaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
@@ -6,11 +6,20 @@ import { BrandLogo } from '@/components/brand/brand-logo';
 
 export function PublicFooter() {
     const currentYear = new Date().getFullYear();
+    const { pathname } = useLocation();
+
+    const handleFeaturesClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+        if (pathname === publicPaths.home) {
+            e.preventDefault();
+            document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+        }
+    };
 
     const columnClass = 'space-y-5';
     const titleClass = 'text-sm font-extrabold text-foreground tracking-tight';
+
     const linkClass =
-        'text-[0.95rem] text-muted-foreground transition-colors hover:text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm inline-flex';
+        'inline-flex items-center text-[0.95rem] text-muted-foreground transition-all duration-200 hover:text-primary hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm';
 
     return (
         <footer className='relative border-t border-border bg-surface pt-16 pb-8 overflow-hidden'>
@@ -24,7 +33,7 @@ export function PublicFooter() {
                     <div className='flex flex-col items-start gap-6 lg:col-span-2'>
                         <Link
                             to={publicPaths.home}
-                            className='inline-block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary'
+                            className='inline-block rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-transform hover:scale-[0.98]'
                         >
                             <BrandLogo className='scale-95 origin-left' />
                         </Link>
@@ -44,9 +53,13 @@ export function PublicFooter() {
                             </h2>
                             <ul className='space-y-3.5'>
                                 <li>
-                                    <a href='#features' className={linkClass}>
+                                    <Link
+                                        to={`${publicPaths.home}#features`}
+                                        onClick={handleFeaturesClick}
+                                        className={linkClass}
+                                    >
                                         {ES_UI.footer.columns.platform.features}
-                                    </a>
+                                    </Link>
                                 </li>
                                 <li>
                                     <Link to={publicPaths.login} className={linkClass}>

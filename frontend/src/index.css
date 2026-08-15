@@ -177,10 +177,24 @@
     * {
         @apply border-border outline-ring/50;
     }
-    body {
-        @apply bg-background text-foreground antialiased;
-    }
+
     html {
         scroll-behavior: smooth;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    html::-webkit-scrollbar {
+        display: none;
+    }
+
+    body {
+        @apply bg-background text-foreground antialiased;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    body::-webkit-scrollbar {
+        display: none;
     }
 }

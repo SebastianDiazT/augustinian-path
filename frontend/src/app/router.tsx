@@ -1,39 +1,34 @@
 import { lazy, Suspense } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import PublicLayout from './layouts/public-layout';
+import { PageLoader } from '@/components/ui/page-loader';
 
-// Páginas cargadas perezosamente (Lazy Loading)
 const HomePage = lazy(() => import('@/pages/public/home-page'));
 const LoginPage = lazy(() => import('@/pages/auth/login-page'));
+const PrivacyPage = lazy(() => import('@/pages/public/privacy-page'));
+const TermsPage = lazy(() => import('@/pages/public/terms-page'));
+const SupportPage = lazy(() => import('@/pages/public/support-page'));
 
-// Componente temporal de carga
-const PageLoader = () => (
-    <div className='flex min-h-screen items-center justify-center text-muted-foreground'>
-        Cargando plataforma...
-    </div>
-);
+const NotFoundPage = lazy(() => import('@/pages/error/not-found-page'));
+const ForbiddenPage = lazy(() => import('@/pages/error/forbidden-page'));
+
 
 export function AppRouter() {
     return (
         <Suspense fallback={<PageLoader />}>
             <Routes>
-                {/* RUTAS PÚBLICAS (Con Header y Footer) */}
                 <Route element={<PublicLayout />}>
                     <Route path='/' element={<HomePage />} />
+                    <Route path='/privacy' element={<PrivacyPage />} />
+                    <Route path='/terms' element={<TermsPage />} />
+                    <Route path='/support' element={<SupportPage />} />
                 </Route>
 
-                {/* RUTAS SIN LAYOUT (Pantalla completa, ej: Login) */}
                 <Route path='/login' element={<LoginPage />} />
 
-                {/* RUTA 404 CATCH-ALL */}
-                <Route
-                    path='*'
-                    element={
-                        <div className='flex min-h-screen items-center justify-center'>
-                            <h1 className='text-2xl font-bold'>404 - Ruta no encontrada</h1>
-                        </div>
-                    }
-                />
+                <Route path='/403' element={<ForbiddenPage />} />
+
+                <Route path='*' element={<NotFoundPage />} />
             </Routes>
         </Suspense>
     );

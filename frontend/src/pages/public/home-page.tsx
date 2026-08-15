@@ -5,6 +5,7 @@ import { ES_UI } from '@/locales/es';
 import { FeatureCard } from '@/components/marketing/feature-card';
 import { Button } from '@/components/ui/button';
 import { HeroProductPreview } from '@/components/marketing/hero-product-preview';
+import { SEO } from '@/components/seo';
 
 export default function HomePage() {
     const scrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -14,7 +15,7 @@ export default function HomePage() {
 
     return (
         <div className='flex flex-col'>
-            {/* SECCIÓN HERO (Diseño Asimétrico a 2 columnas) */}
+            <SEO title={ES_UI.marketing.seo.title} description={ES_UI.marketing.seo.description} />
             <section
                 id='home'
                 className='scroll-mt-24 px-4 py-16 sm:px-6 lg:py-24'
@@ -22,7 +23,6 @@ export default function HomePage() {
             >
                 <div className='mx-auto grid w-full max-w-7xl items-center gap-12 lg:grid-cols-[0.9fr_1.1fr]'>
                     <div className='animate-reveal-soft opacity-0'>
-                        {/* El Badge que te gustó */}
                         <span className='inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-extrabold uppercase tracking-widest text-primary dark:bg-primary/10'>
                             <Sparkles className='size-3.5 text-accent' aria-hidden='true' />
                             {ES_UI.marketing.heroBadge}
@@ -43,7 +43,6 @@ export default function HomePage() {
                         </p>
 
                         <div className='mt-8 flex flex-col gap-3 sm:flex-row sm:items-center'>
-                            {/* Reemplazo de HeroAuthAction por un botón consistente que lleva al Login */}
                             <Link to={publicPaths.login} className='w-full sm:w-auto'>
                                 <Button
                                     size='lg'
@@ -72,12 +71,10 @@ export default function HomePage() {
                         </p>
                     </div>
 
-                    {/* Componente de Vista Previa a la derecha */}
                     <HeroProductPreview />
                 </div>
             </section>
 
-            {/* SECCIÓN BENEFICIOS */}
             <section
                 id='features'
                 className='border-y border-border bg-surface-muted/50 px-4 py-20 sm:px-6 lg:py-32'
@@ -121,15 +118,16 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* LLAMADA A LA ACCIÓN FINAL */}
             <section className='relative isolate px-4 py-20 sm:px-6 lg:py-32'>
-                <div className='mx-auto max-w-4xl overflow-hidden rounded-4xl border border-border bg-surface px-6 py-16 text-center shadow-card sm:px-16 animate-reveal-soft'>
+                <div
+                    className='mx-auto max-w-4xl overflow-hidden rounded-4xl border border-border bg-surface px-6 py-16 text-center shadow-card sm:px-16 animate-reveal-soft opacity-0'
+                    style={{ animationDelay: '400ms' }}
+                >
                     <h2 className='font-display text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl'>
-                        ¿Listo para tomar el control de tu semestre?
+                        {ES_UI.marketing.bottomCta.title}
                     </h2>
                     <p className='mx-auto mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground'>
-                        Deja de adivinar qué cursos puedes llevar. Accede ahora con tu correo
-                        institucional y arma tu horario en minutos.
+                        {ES_UI.marketing.bottomCta.description}
                     </p>
                     <div className='mt-10 flex justify-center'>
                         <Link to={publicPaths.login}>
@@ -137,8 +135,11 @@ export default function HomePage() {
                                 size='lg'
                                 className='h-14 rounded-2xl px-10 text-base font-bold shadow-lg transition-transform hover:scale-[1.03] active:scale-95'
                             >
-                                Ingresar a la plataforma
-                                <ArrowRight className='ml-2 size-4' aria-hidden='true' />
+                                {ES_UI.marketing.bottomCta.button}
+                                <ArrowRight
+                                    className='ml-2 size-4 shrink-0 transition-transform hover:translate-x-1'
+                                    aria-hidden='true'
+                                />
                             </Button>
                         </Link>
                     </div>
