@@ -16,11 +16,8 @@ API_VERSION = env('API_VERSION', default='v1')
 API_SEMANTIC_VERSION = env('API_SEMANTIC_VERSION', default='1.0.0')
 
 DJANGO_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
 
@@ -35,27 +32,25 @@ THIRD_PARTY_APPS = [
 
 LOCAL_APPS: list[str] = [
     'apps.core',
-    # 'apps.institution',
+    'apps.institution',
     # 'apps.curricula',
     # 'apps.offerings',
-    # 'apps.accounts',
+    'apps.accounts',
     # 'apps.academic_records',
     # 'apps.schedules',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
-# AUTH_USER_MODEL = 'accounts.User'
+AUTH_USER_MODEL = 'accounts.User'
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
     'apps.core.middleware.RequestIDMiddleware',

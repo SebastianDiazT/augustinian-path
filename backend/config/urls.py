@@ -1,5 +1,4 @@
 from django.conf import settings
-from django.contrib import admin
 from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
@@ -10,7 +9,6 @@ from drf_spectacular.views import (
 api_prefix = f'api/{settings.API_VERSION}/'
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
     path(api_prefix, include('apps.core.urls', namespace='core')),
     # path(f'{api_prefix}institution/', include('apps.institution.urls', namespace='institution')),
     # path(f'{api_prefix}curricula/', include('apps.curricula.urls', namespace='curricula')),
