@@ -119,3 +119,26 @@ class SupportTicketCreateSerializer(serializers.Serializer):
             except ProfessionalSchool.DoesNotExist as err:
                 raise serializers.ValidationError('La escuela seleccionada no existe.') from err
         return None
+
+
+class ManagementMembershipRequestSerializer(serializers.ModelSerializer):
+    """Serializador rico en datos para que el delegado sepa a quién está aprobando."""
+
+    student_name = serializers.CharField(source='user.full_name', read_only=True)
+    student_cui = serializers.CharField(source='user.cui', read_only=True)
+    student_email = serializers.EmailField(source='user.email', read_only=True)
+    school_name = serializers.CharField(source='school.name', read_only=True)
+    plan_name = serializers.CharField(source='curriculum_plan.name', read_only=True)
+
+    class Meta:
+        model = MembershipRequest
+        fields = [
+            'public_id',
+            'student_name',
+            'student_cui',
+            'student_email',
+            'school_name',
+            'plan_name',
+            'status',
+            'created_at',
+        ]
