@@ -8,4 +8,7 @@ export const publicPaths = {
 
 export const privatePaths = {
     dashboard: '/student/dashboard',
+
+    onboardingCui: '/onboarding/cui',
+    onboardingSchool: '/onboarding/school',
 };

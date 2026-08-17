@@ -309,5 +309,62 @@ export const ES_UI = {
                 default: 'Ocurrió un error al intentar iniciar sesión. Inténtalo más tarde.',
             },
         },
+        onboarding: {
+            cui: {
+                seo: {
+                    title: 'Completa tu perfil - CUI',
+                    description: 'Ingresa tu Código Único de Identificación para continuar.',
+                },
+                title: 'Hola, {name}',
+                subtitle:
+                    'Para personalizar tu experiencia y validar tu identidad académica, ingresa tu Código Único de Identificación (CUI) de la UNSA.',
+                label: 'Código Único de Identificación (CUI)',
+                placeholder: 'Ej: 20222060',
+                button: 'Validar y continuar',
+                loading: 'Validando...',
+                warning:
+                    'Verifica que tu CUI sea correcto. Por seguridad, cualquier modificación posterior requerirá la evaluación manual de un administrador.',
+                errors: {
+                    required: 'El CUI es obligatorio.',
+                    length: 'El CUI debe tener exactamente 8 dígitos.',
+                    numeric: 'El CUI solo debe contener números.',
+                    conflict: 'Este CUI ya está registrado por otro estudiante.',
+                    default: 'Ocurrió un error al guardar tu CUI. Inténtalo de nuevo.',
+                },
+            },
+            school: {
+                seo: {
+                    title: 'Completa tu perfil - Escuela',
+                    description: 'Selecciona tu escuela profesional y plan de estudios.',
+                },
+                title: 'Último paso, {name}',
+                subtitle:
+                    'Para poder asignarte tus cursos correctamente, indícanos a qué escuela profesional y plan de estudios perteneces.',
+                form: {
+                    areaLabel: 'Área Académica',
+                    areaPlaceholder: 'Selecciona tu área...',
+                    facultyLabel: 'Facultad',
+                    facultyPlaceholder: 'Selecciona tu facultad...',
+                    schoolLabel: 'Escuela Profesional',
+                    schoolPlaceholder: 'Selecciona tu escuela...',
+                    planLabel: 'Plan de Estudios',
+                    planPlaceholder: 'Selecciona tu plan (ej. 2021)...',
+                },
+                button: 'Enviar solicitud de acceso',
+                loading: 'Procesando...',
+                warning:
+                    'Elige cuidadosamente tu escuela y plan de estudios. Si te equivocas, tendrás que abrir un ticket de soporte al administrador para corregirlo.',
+                pending: {
+                    title: 'Solicitud en revisión',
+                    subtitle:
+                        'Tu solicitud ha sido enviada con éxito. Un delegado o administrador validará tu perfil en breve para darte acceso a tu malla curricular.',
+                    refreshBtn: 'Comprobar estado',
+                },
+                errors: {
+                    required: 'Debes seleccionar una escuela y un plan de estudios.',
+                    default: 'Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo.',
+                },
+            },
+        },
     },
 } as const;

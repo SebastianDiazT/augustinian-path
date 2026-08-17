@@ -1,7 +1,6 @@
 import { CalendarDays, CheckCircle2, Clock3, GraduationCap, Sparkles } from 'lucide-react';
 import { ES_UI } from '@/locales/es';
 
-// Datos de demostración
 const selectedCourses = [
     { name: 'Cálculo en varias variables', credits: 4 },
     { name: 'Estructuras de datos', credits: 4 },

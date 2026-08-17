@@ -3,12 +3,19 @@ import { Routes, Route } from 'react-router-dom';
 import PublicLayout from './layouts/public-layout';
 import { PageLoader } from '@/components/ui/page-loader';
 import { GuestRoute } from '@/components/navigation/guest-route';
+import { AuthRoute } from '@/components/navigation/auth-route';
 
 const HomePage = lazy(() => import('@/pages/public/home-page'));
 const LoginPage = lazy(() => import('@/pages/auth/login-page'));
+const OnboardingCuiPage = lazy(() => import('@/pages/auth/onboarding-cui-page'));
+const OnboardingSchoolPage = lazy(() => import('@/pages/auth/onboarding-school-page'));
 const PrivacyPage = lazy(() => import('@/pages/public/privacy-page'));
 const TermsPage = lazy(() => import('@/pages/public/terms-page'));
 const SupportPage = lazy(() => import('@/pages/public/support-page'));
+
+const StudentLayout = lazy(() => import("@/app/layouts/student-layout"));
+const DashboardPage = lazy(() => import("@/pages/private/student/dashboard-page"));
+const CurriculumPage = lazy(() => import('@/pages/private/student/curriculum-page'));
 
 const NotFoundPage = lazy(() => import('@/pages/error/not-found-page'));
 const ForbiddenPage = lazy(() => import('@/pages/error/forbidden-page'));
@@ -27,6 +34,16 @@ export function AppRouter() {
 
                 <Route element={<GuestRoute />}>
                     <Route path='/login' element={<LoginPage />} />
+                </Route>
+
+                <Route element={<AuthRoute />}>
+                    <Route path='/onboarding/cui' element={<OnboardingCuiPage />} />
+                    <Route path='/onboarding/school' element={<OnboardingSchoolPage />} />
+
+                    <Route element={<StudentLayout />}>
+                        <Route path='/student/dashboard' element={<DashboardPage />} />
+                        <Route path='/student/curriculum' element={<CurriculumPage />} />
+                    </Route>
                 </Route>
 
                 <Route path='/403' element={<ForbiddenPage />} />
