@@ -36,6 +36,9 @@ class ElectiveBranch(CatalogBaseModel):
     def __str__(self):
         return f'{self.name} ({self.curriculum_plan.year})'
 
+    def get_school(self):
+        return self.curriculum_plan.school
+
 
 class Course(CatalogBaseModel):
     class CourseType(models.TextChoices):
@@ -62,7 +65,6 @@ class Course(CatalogBaseModel):
     name = models.CharField(max_length=255)
     credits = models.DecimalField(max_digits=4, decimal_places=2)
 
-    # Desglose de Horas
     theory_hours = models.PositiveIntegerField(default=0, verbose_name='Horas Teóricas (TEOR)')
     seminar_hours = models.PositiveIntegerField(default=0, verbose_name='Horas Seminario (SEMI)')
     theory_practice_hours = models.PositiveIntegerField(
@@ -100,6 +102,32 @@ class Course(CatalogBaseModel):
     def __str__(self):
         return f'{self.code} - {self.name}'
 
+    def get_school(self):
+        return self.curriculum_plan.school
+
     @property
     def has_lab(self):
         return self.lab_hours > 0
+
+
+class Prerequisite(CatalogBaseModel):
+    """Tabla para armar el grafo de flechas (A -> B)"""
+
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='prerequisites')
+    required_course = models.ForeignKey(
+        Course, on_delete=models.CASCADE, related_name='required_by'
+    )
+
+    class Meta:
+        db_table = 'curricula_prerequisite'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['course', 'required_course'], name='unique_prerequisite'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.course.name} requiere {self.required_course.name}'
+
+    def get_school(self):
+        return self.course.curriculum_plan.school
