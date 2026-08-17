@@ -37,7 +37,6 @@ export function DashboardSidebar({
                     collapsed ? 'justify-center px-0' : 'justify-between px-5',
                 ].join(' ')}
             >
-                {/* Aquí usamos tu nuevo Isotipo o el Logo completo */}
                 {collapsed ? (
                     <BrandMark className='size-11 shrink-0' />
                 ) : (
@@ -47,6 +46,7 @@ export function DashboardSidebar({
                 {onClose && !collapsed && (
                     <button
                         type='button'
+                        aria-label='Cerrar menú lateral'
                         className='inline-flex size-8 items-center justify-center rounded-lg text-muted-foreground transition hover:bg-muted focus:outline-none'
                         onClick={onClose}
                     >
@@ -55,7 +55,6 @@ export function DashboardSidebar({
                 )}
             </div>
 
-            {/* Componente extraído */}
             <SidebarNavigation collapsed={collapsed} groups={navigation} onNavigate={onNavigate} />
 
             <div className='border-t border-border p-3 space-y-1'>

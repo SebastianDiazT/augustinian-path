@@ -11,11 +11,11 @@ export function useOnboardingCui() {
     const navigate = useNavigate();
     const { user, setUser } = useAuthStore();
 
-    const [digits, setDigits] = useState<string[]>(Array(8).fill(''));
+    const [digits, setDigits] = useState<string[]>(() => Array(8).fill(''));
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const inputRefs = useRef<(HTMLInputElement | null)[]>(Array(8).fill(null));
+    const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
     const dict = ES_UI.auth.onboarding.cui;
     const firstName = user?.full_name.split(' ')[0] || 'Estudiante';
@@ -81,14 +81,10 @@ export function useOnboardingCui() {
         try {
             setIsLoading(true);
 
-            const res = await api.post('/accounts/student-profiles/me/', { cui: cleanCui });
-            const newStudentProfile = res.data.data;
+            const res = await api.post('/accounts/student/me/', { cui: cleanCui });
 
             if (user) {
-                setUser({
-                    ...user,
-                    student_profile: newStudentProfile,
-                });
+                setUser(res.data);
             }
 
             toast.success('CUI registrado correctamente.');
@@ -100,7 +96,11 @@ export function useOnboardingCui() {
                 if (err.response?.status === 409) {
                     setError(dict.errors.conflict);
                 } else if (err.response?.status === 400) {
-                    setError(err.response.data.message || dict.errors.default);
+                    setError(
+                        err.response.data.detail ||
+                            err.response.data.cui?.[0] ||
+                            dict.errors.default,
+                    );
                 } else {
                     setError(dict.errors.default);
                 }

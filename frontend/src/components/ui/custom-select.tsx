@@ -7,6 +7,7 @@ export interface SelectOption {
 }
 
 interface CustomSelectProps {
+    id?: string;
     value: string;
     onChange: (value: string) => void;
     options: SelectOption[];
@@ -15,6 +16,7 @@ interface CustomSelectProps {
 }
 
 export function CustomSelect({
+    id,
     value,
     onChange,
     options,
@@ -42,6 +44,7 @@ export function CustomSelect({
     return (
         <div className='relative w-full text-sm' ref={dropdownRef}>
             <button
+                id={id}
                 type='button'
                 onClick={() => !disabled && setIsOpen(!isOpen)}
                 disabled={disabled}

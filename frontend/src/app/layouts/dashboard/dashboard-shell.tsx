@@ -56,7 +56,6 @@ export function DashboardShell({
 
     return (
         <div className='min-h-dvh bg-background text-foreground'>
-            {/* SIDEBAR DESKTOP (FIJO Y ALTO COMPLETO) */}
             <DashboardSidebar
                 className='fixed inset-y-0 left-0 z-40 hidden h-dvh lg:flex'
                 collapsed={isCollapsed}
@@ -64,14 +63,15 @@ export function DashboardShell({
                 onCollapse={() => setIsCollapsed(!isCollapsed)}
             />
 
-            {/* SIDEBAR MÓVIL (Overlay) */}
             <div
                 className={[
                     'fixed inset-0 z-50 transition-all lg:hidden',
                     isMobileOpen ? 'pointer-events-auto' : 'pointer-events-none',
                 ].join(' ')}
             >
-                <div
+                <button
+                    type='button'
+                    aria-label='Cerrar menú lateral'
                     className={[
                         'absolute inset-0 bg-background/80 backdrop-blur-sm transition-opacity duration-300',
                         isMobileOpen ? 'opacity-100' : 'opacity-0',
@@ -94,18 +94,17 @@ export function DashboardShell({
                 </div>
             </div>
 
-            {/* COLUMNA PRINCIPAL (CON MARGEN IZQUIERDO DINÁMICO) */}
             <div
                 className={[
                     'flex min-h-dvh min-w-0 flex-col transition-[margin-left] duration-300 ease-in-out',
                     isCollapsed ? 'lg:ml-20' : 'lg:ml-72',
                 ].join(' ')}
             >
-                {/* HEADER */}
                 <header className='sticky top-0 z-30 flex h-20 shrink-0 items-center justify-between gap-4 border-b border-border bg-surface/80 px-4 backdrop-blur-xl sm:px-6 lg:px-8'>
                     <div className='flex min-w-0 items-center gap-4'>
                         <button
                             type='button'
+                            aria-label='Abrir menú de navegación'
                             className='inline-flex size-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground transition hover:bg-muted focus:outline-none lg:hidden'
                             onClick={() => setIsMobileOpen(true)}
                         >
@@ -127,7 +126,6 @@ export function DashboardShell({
                     </div>
                 </header>
 
-                {/* CONTENIDO (Outlet) */}
                 <main className='flex-1 p-4 sm:p-6 lg:p-8'>
                     <div className='mx-auto w-full max-w-6xl'>{children}</div>
                 </main>

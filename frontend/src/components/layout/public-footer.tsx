@@ -19,7 +19,7 @@ export function PublicFooter() {
     const titleClass = 'text-sm font-extrabold text-foreground tracking-tight';
 
     const linkClass =
-        'inline-flex items-center text-[0.95rem] text-muted-foreground transition-all duration-200 hover:text-primary hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm';
+        'inline-flex items-center text-[0.95rem] text-muted-foreground transition-transform transition-colors duration-200 hover:text-primary hover:translate-x-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-sm';
 
     return (
         <footer className='relative border-t border-border bg-surface pt-16 pb-8 overflow-hidden'>

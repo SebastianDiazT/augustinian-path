@@ -35,8 +35,8 @@ const sections: PublicDocumentSection[] = [
             <>
                 <p>{dict.sections.collectedData.p1}</p>
                 <ul className='list-disc space-y-2 pl-5'>
-                    {dict.sections.collectedData.list.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                    {dict.sections.collectedData.list.map((item) => (
+                        <li key={item}>{item}</li>
                     ))}
                 </ul>
                 <p>{dict.sections.collectedData.p2}</p>
@@ -48,8 +48,8 @@ const sections: PublicDocumentSection[] = [
         title: dict.sections.purposes.title,
         content: (
             <ul className='list-disc space-y-2 pl-5'>
-                {dict.sections.purposes.list.map((item, idx) => (
-                    <li key={idx}>{item}</li>
+                {dict.sections.purposes.list.map((item) => (
+                    <li key={item}>{item}</li>
                 ))}
             </ul>
         ),

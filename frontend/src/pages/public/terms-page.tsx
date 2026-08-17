@@ -29,8 +29,8 @@ const sections: PublicDocumentSection[] = [
         title: dict.sections.access.title,
         content: (
             <ul className='list-disc space-y-2 pl-5'>
-                {dict.sections.access.list.map((item, idx) => (
-                    <li key={idx}>{item}</li>
+                {dict.sections.access.list.map((item) => (
+                    <li key={item}>{item}</li>
                 ))}
             </ul>
         ),
@@ -53,8 +53,8 @@ const sections: PublicDocumentSection[] = [
                 <p>{dict.sections.acceptableUse.p1}</p>
                 <p>{dict.sections.acceptableUse.p2}</p>
                 <ul className='list-disc space-y-2 pl-5'>
-                    {dict.sections.acceptableUse.list.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                    {dict.sections.acceptableUse.list.map((item) => (
+                        <li key={item}>{item}</li>
                     ))}
                 </ul>
             </>

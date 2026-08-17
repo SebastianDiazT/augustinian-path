@@ -1,6 +1,19 @@
 import { CheckCircle2, Lock, Unlock } from 'lucide-react';
 import { ES_UI } from '@/locales/es';
 
+const NODE_STYLES = {
+    done: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400/80 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
+    current:
+        'border-primary/60 bg-primary/20 text-primary shadow-[0_0_40px_rgba(var(--primary),0.25)]',
+    locked: 'border-foreground/20 bg-foreground/10 text-foreground/60',
+};
+
+const NODE_ICONS = {
+    done: <CheckCircle2 className='size-4' />,
+    current: <Unlock className='size-4' />,
+    locked: <Lock className='size-4' />,
+};
+
 function BackgroundNode({
     status,
     title,
@@ -10,25 +23,12 @@ function BackgroundNode({
     title: string;
     subtitle: string;
 }) {
-    const styles = {
-        done: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400/80 shadow-[0_0_15px_rgba(16,185,129,0.1)]',
-        current:
-            'border-primary/60 bg-primary/20 text-primary shadow-[0_0_40px_rgba(var(--primary),0.25)]',
-        locked: 'border-foreground/20 bg-foreground/10 text-foreground/60',
-    };
-
-    const icons = {
-        done: <CheckCircle2 className='size-4' />,
-        current: <Unlock className='size-4' />,
-        locked: <Lock className='size-4' />,
-    };
-
     return (
         <div
-            className={`flex w-56 flex-col gap-1.5 rounded-2xl border p-4 backdrop-blur-md transition-transform duration-700 hover:scale-105 ${styles[status]}`}
+            className={`flex w-56 flex-col gap-1.5 rounded-2xl border p-4 backdrop-blur-md transition-transform duration-700 hover:scale-105 ${NODE_STYLES[status]}`}
         >
             <div className='flex items-center gap-2'>
-                {icons[status]}
+                {NODE_ICONS[status]}
                 <span className='text-[10px] font-extrabold uppercase tracking-widest opacity-90'>
                     {subtitle}
                 </span>

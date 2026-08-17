@@ -4,6 +4,11 @@ import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
 import { useOnboardingCui } from '@/hooks/use-onboarding-cui';
 
+const CUI_FIELDS = Array.from({ length: 8 }, (_, i) => ({
+    id: `cui-digit-${i}`,
+    index: i,
+}));
+
 export default function OnboardingCuiPage() {
     const {
         user,
@@ -48,27 +53,29 @@ export default function OnboardingCuiPage() {
 
                     <form onSubmit={handleSubmit} className='space-y-6 sm:space-y-8'>
                         <div>
-                            <label className='block text-center text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4'>
+                            <label htmlFor='cui-digit-0' className='block text-center text-xs sm:text-sm font-semibold text-foreground mb-3 sm:mb-4'>
                                 {dict.label}
                             </label>
 
                             <div className='flex justify-between gap-1.5 sm:gap-2 md:gap-3'>
-                                {digits.map((digit, index) => (
+                                {CUI_FIELDS.map((field) => (
                                     <input
-                                        key={index}
+                                        key={field.id}
+                                        id={field.id}
+                                        aria-label={`Dígito ${field.index + 1} del CUI`}
                                         ref={(el) => {
-                                            inputRefs.current[index] = el;
+                                            inputRefs.current[field.index] = el;
                                         }}
                                         type='text'
                                         inputMode='numeric'
                                         pattern='\d*'
                                         maxLength={1}
-                                        value={digit}
-                                        onChange={(e) => handleChange(index, e.target.value)}
-                                        onKeyDown={(e) => handleKeyDown(index, e)}
+                                        value={digits[field.index]}
+                                        onChange={(e) => handleChange(field.index, e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(field.index, e)}
                                         onPaste={handlePaste}
                                         disabled={isLoading}
-                                        className={`w-full min-w-0 h-12 sm:h-14 sm:aspect-square rounded-lg sm:rounded-xl border-2 text-center text-lg sm:text-2xl font-extrabold transition-all focus:outline-none focus:ring-4
+                                        className={`w-full min-w-0 h-12 sm:h-14 sm:aspect-square rounded-lg sm:rounded-xl border-2 text-center text-lg sm:text-2xl font-extrabold transition-colors focus:outline-none focus:ring-4
                                             ${
                                                 error
                                                     ? 'border-destructive/50 bg-destructive/5 text-destructive focus:border-destructive focus:ring-destructive/20'
@@ -96,7 +103,7 @@ export default function OnboardingCuiPage() {
                             type='submit'
                             size='lg'
                             disabled={isLoading || !isComplete}
-                            className='w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-bold shadow-md transition-all hover:scale-[1.02] active:scale-95'
+                            className='w-full h-11 sm:h-12 rounded-xl text-sm sm:text-base font-bold shadow-md transition-transform hover:scale-[1.02] active:scale-95'
                         >
                             {isLoading ? (
                                 <>

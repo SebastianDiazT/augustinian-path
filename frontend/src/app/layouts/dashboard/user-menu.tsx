@@ -9,6 +9,12 @@ interface UserMenuProps {
     activePanel: DashboardPanel;
 }
 
+const panelLabels: Record<DashboardPanel, string> = {
+    student: 'Estudiante',
+    delegate: 'Delegado',
+    admin: 'Administrador',
+};
+
 export function UserMenu({ activePanel }: UserMenuProps) {
     const { user, clearAuth } = useAuthStore();
     const navigate = useNavigate();
@@ -17,15 +23,8 @@ export function UserMenu({ activePanel }: UserMenuProps) {
 
     const displayName = user?.full_name || user?.email || 'Usuario';
 
-    // Nombres del panel
-    const panelLabels: Record<DashboardPanel, string> = {
-        student: 'Estudiante',
-        delegate: 'Delegado',
-        admin: 'Administrador',
-    };
     const panelLabel = panelLabels[activePanel];
 
-    // Lógica para cerrar al hacer clic afuera
     useEffect(() => {
         if (!isOpen) return;
         const handlePointerDown = (event: PointerEvent) => {
@@ -92,8 +91,6 @@ export function UserMenu({ activePanel }: UserMenuProps) {
                     </div>
 
                     <div className='p-2 space-y-1'>
-                        {/* Aquí podríamos poner la lógica de roles (canSwitchToAdmin) en el futuro */}
-
                         <Link
                             to={publicPaths.support}
                             className='flex min-h-10 items-center gap-3 rounded-xl px-3 text-sm font-medium text-foreground transition hover:bg-muted'

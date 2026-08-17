@@ -16,8 +16,8 @@ const sections: PublicDocumentSection[] = [
             <>
                 <p>{dict.sections.accessHelp.p1}</p>
                 <ul className='list-disc space-y-2 pl-5'>
-                    {dict.sections.accessHelp.list.map((item, idx) => (
-                        <li key={idx}>{item}</li>
+                    {dict.sections.accessHelp.list.map((item) => (
+                        <li key={item}>{item}</li>
                     ))}
                 </ul>
             </>

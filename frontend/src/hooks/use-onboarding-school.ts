@@ -4,11 +4,6 @@ import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/auth-store';
 
-export interface Area {
-    public_id: string;
-    name: string;
-}
-
 export interface Faculty {
     public_id: string;
     area: string;
@@ -17,7 +12,7 @@ export interface Faculty {
 
 export interface ProfessionalSchool {
     public_id: string;
-    faculty: string;
+    faculty: Faculty;
     name: string;
 }
 
@@ -31,8 +26,13 @@ interface MembershipRequestData {
     status: string;
 }
 
+export const ACADEMIC_AREAS = [
+    { value: 'biomedicas', label: 'Biomédicas' },
+    { value: 'ingenierias', label: 'Ingenierías' },
+    { value: 'sociales', label: 'Sociales' },
+];
+
 export function useOnboardingSchool() {
-    const [allAreas, setAllAreas] = useState<Area[]>([]);
     const [allFaculties, setAllFaculties] = useState<Faculty[]>([]);
     const [allSchools, setAllSchools] = useState<ProfessionalSchool[]>([]);
     const [plans, setPlans] = useState<CurriculumPlan[]>([]);
@@ -51,36 +51,32 @@ export function useOnboardingSchool() {
 
     const fetchInitialData = async () => {
         try {
-            const reqsRes = await api.get('/accounts/membership-requests/');
-            const requests: MembershipRequestData[] = reqsRes.data.data || reqsRes.data;
+            const reqsRes = await api.get('/accounts/student/membership-requests/');
+            const requests: MembershipRequestData[] = reqsRes.data;
             const isPending = requests.some((req) => req.status === 'pending');
+
             setHasPendingRequest(isPending);
 
             if (!isPending) {
-                const [areasRes, facultiesRes, schoolsRes] = await Promise.all([
-                    api.get('/institution/areas/'),
-                    api.get('/institution/faculties/'),
-                    api.get('/institution/professional-schools/'),
+                const [facultiesRes, schoolsRes] = await Promise.all([
+                    api.get('/institution/catalog/faculties/'),
+                    api.get('/institution/catalog/schools/'),
                 ]);
 
-                setAllAreas(areasRes.data.data || areasRes.data);
-                setAllFaculties(facultiesRes.data.data || facultiesRes.data);
-                setAllSchools(schoolsRes.data.data || schoolsRes.data);
+                setAllFaculties(facultiesRes.data);
+                setAllSchools(schoolsRes.data);
             }
-        } catch (err) {
-            console.error('Error cargando datos:', err);
+        } catch {
             toast.error('Hubo un problema al conectar con el servidor.');
         }
     };
 
     useEffect(() => {
         let mounted = true;
-
         const init = async () => {
             await fetchInitialData();
             if (mounted) setIsPageLoading(false);
         };
-
         init();
         return () => {
             mounted = false;
@@ -91,28 +87,21 @@ export function useOnboardingSchool() {
         setIsPageLoading(true);
         try {
             const userRes = await api.get('/accounts/users/me/');
-            const updatedUser = userRes.data.data;
-
+            const updatedUser = userRes.data;
             const isApproved =
                 updatedUser.school_memberships && updatedUser.school_memberships.length > 0;
 
             setUser(updatedUser);
-
-            if (!isApproved) {
-                await fetchInitialData();
-            }
-        } catch (error) {
-            console.error('Error al refrescar el estado:', error);
-            toast.error('No pudimos actualizar tu estado. Inténtalo de nuevo.');
+            if (!isApproved) await fetchInitialData();
+        } catch {
+            toast.error('No pudimos actualizar tu estado.');
         } finally {
-            setTimeout(() => {
-                setIsPageLoading(false);
-            }, 100);
+            setIsPageLoading(false);
         }
     };
 
-    const handleAreaChange = (areaId: string) => {
-        setSelectedArea(areaId);
+    const handleAreaChange = (areaValue: string) => {
+        setSelectedArea(areaValue);
         setSelectedFaculty('');
         setSelectedSchool('');
         setSelectedPlan('');
@@ -136,10 +125,9 @@ export function useOnboardingSchool() {
         }
 
         try {
-            const plansRes = await api.get(`/curricula/curriculum-plans/?school=${schoolId}`);
-            setPlans(plansRes.data.data || plansRes.data);
-        } catch (err) {
-            console.error('Error cargando planes:', err);
+            const res = await api.get(`/curricula/catalog/plans/?school=${schoolId}`);
+            setPlans(res.data);
+        } catch {
             toast.error('Error al cargar los planes de estudio.');
         }
     };
@@ -153,23 +141,17 @@ export function useOnboardingSchool() {
 
         try {
             setIsLoading(true);
-            await api.post('/accounts/membership-requests/', {
-                school: selectedSchool,
-                curriculum_plan: selectedPlan,
-                request_type: 'initial_request',
+            await api.post('/accounts/student/membership-requests/', {
+                school_id: selectedSchool,
+                curriculum_plan_id: selectedPlan,
             });
 
             toast.success('Solicitud enviada correctamente.');
             setHasPendingRequest(true);
             return true;
         } catch (err: unknown) {
-            console.error('Error al enviar solicitud:', err);
             if (axios.isAxiosError(err)) {
-                if (err.response?.data?.school) {
-                    setError(err.response.data.school[0]);
-                } else {
-                    setError('Ocurrió un error al enviar tu solicitud. Inténtalo de nuevo.');
-                }
+                setError(err.response?.data?.detail || 'Error al enviar la solicitud.');
             } else {
                 setError('Ocurrió un error inesperado.');
             }
@@ -180,10 +162,11 @@ export function useOnboardingSchool() {
     };
 
     const filteredFaculties = allFaculties.filter((f) => f.area === selectedArea);
-    const filteredSchools = allSchools.filter((s) => s.faculty === selectedFaculty);
+
+    const filteredSchools = allSchools.filter((s) => s.faculty.public_id === selectedFaculty);
 
     return {
-        allAreas,
+        areaOptions: ACADEMIC_AREAS,
         filteredFaculties,
         filteredSchools,
         plans,

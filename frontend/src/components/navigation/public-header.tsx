@@ -28,7 +28,7 @@ export function PublicHeader() {
                         to={isAuthenticated ? privatePaths.dashboard : publicPaths.login}
                         tabIndex={-1}
                     >
-                        <Button className='group relative h-9 overflow-hidden rounded-xl bg-primary px-4 font-bold text-primary-foreground shadow-[0_1px_4px_rgba(0,0,0,0.16)] transition-all duration-300 hover:scale-[1.02] hover:bg-primary/95 hover:shadow-[0_4px_12px_rgba(128,0,32,0.25)] active:scale-95 sm:h-10 sm:px-5 dark:hover:shadow-[0_4px_12px_rgba(248,113,113,0.25)]'>
+                        <Button className='group relative h-9 overflow-hidden rounded-xl bg-primary px-4 font-bold text-primary-foreground shadow-[0_1px_4px_rgba(0,0,0,0.16)] transition-transform duration-300 hover:scale-[1.02] hover:bg-primary/95 hover:shadow-[0_4px_12px_rgba(128,0,32,0.25)] active:scale-95 sm:h-10 sm:px-5 dark:hover:shadow-[0_4px_12px_rgba(248,113,113,0.25)]'>
                             <span className='hidden sm:inline'>
                                 {isAuthenticated
                                     ? ES_UI.navigation.goToDashboard

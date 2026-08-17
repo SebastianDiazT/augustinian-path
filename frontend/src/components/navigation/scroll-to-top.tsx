@@ -8,14 +8,14 @@ export function ScrollToTop() {
         if (hash) {
             const elementId = hash.replace('#', '');
 
-            setTimeout(() => {
+            const timerId = setTimeout(() => {
                 const element = document.getElementById(elementId);
                 if (element) {
                     element.scrollIntoView({ behavior: 'smooth' });
                 }
             }, 100);
 
-            return;
+            return () => clearTimeout(timerId);
         }
 
         window.scrollTo({

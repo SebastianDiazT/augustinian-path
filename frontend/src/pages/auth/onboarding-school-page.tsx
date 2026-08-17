@@ -13,7 +13,7 @@ export default function OnboardingSchoolPage() {
     const firstName = user?.full_name.split(' ')[0] || 'Estudiante';
 
     const {
-        allAreas,
+        areaOptions,
         filteredFaculties,
         filteredSchools,
         plans,
@@ -33,7 +33,6 @@ export default function OnboardingSchoolPage() {
         handleManualRefresh,
     } = useOnboardingSchool();
 
-    const areaOptions = allAreas.map((a) => ({ value: a.public_id, label: a.name }));
     const facultyOptions = filteredFaculties.map((f) => ({ value: f.public_id, label: f.name }));
     const schoolOptions = filteredSchools.map((s) => ({ value: s.public_id, label: s.name }));
     const planOptions = plans.map((p) => ({ value: p.public_id, label: p.name }));
@@ -101,10 +100,14 @@ export default function OnboardingSchoolPage() {
 
                             <form onSubmit={onSubmit} className='space-y-5'>
                                 <div>
-                                    <label className='block text-xs font-semibold text-foreground mb-2'>
+                                    <label
+                                        htmlFor='select-area'
+                                        className='block text-xs font-semibold text-foreground mb-2'
+                                    >
                                         {dict.form.areaLabel}
                                     </label>
                                     <CustomSelect
+                                        id='select-area'
                                         value={selectedArea}
                                         onChange={handleAreaChange}
                                         options={areaOptions}
@@ -114,10 +117,14 @@ export default function OnboardingSchoolPage() {
                                 </div>
 
                                 <div>
-                                    <label className='block text-xs font-semibold text-foreground mb-2'>
+                                    <label
+                                        htmlFor='select-faculty'
+                                        className='block text-xs font-semibold text-foreground mb-2'
+                                    >
                                         {dict.form.facultyLabel}
                                     </label>
                                     <CustomSelect
+                                        id='select-faculty'
                                         value={selectedFaculty}
                                         onChange={handleFacultyChange}
                                         options={facultyOptions}
@@ -127,10 +134,14 @@ export default function OnboardingSchoolPage() {
                                 </div>
 
                                 <div>
-                                    <label className='block text-xs font-semibold text-foreground mb-2'>
+                                    <label
+                                        htmlFor='select-school'
+                                        className='block text-xs font-semibold text-foreground mb-2'
+                                    >
                                         {dict.form.schoolLabel}
                                     </label>
                                     <CustomSelect
+                                        id='select-school'
                                         value={selectedSchool}
                                         onChange={handleSchoolChange}
                                         options={schoolOptions}
@@ -140,10 +151,14 @@ export default function OnboardingSchoolPage() {
                                 </div>
 
                                 <div>
-                                    <label className='block text-xs font-semibold text-foreground mb-2'>
+                                    <label
+                                        htmlFor='select-plan'
+                                        className='block text-xs font-semibold text-foreground mb-2'
+                                    >
                                         {dict.form.planLabel}
                                     </label>
                                     <CustomSelect
+                                        id='select-plan'
                                         value={selectedPlan}
                                         onChange={setSelectedPlan}
                                         options={planOptions}
@@ -170,7 +185,7 @@ export default function OnboardingSchoolPage() {
                                     type='submit'
                                     size='lg'
                                     disabled={isLoading || !selectedSchool || !selectedPlan}
-                                    className='w-full h-11 sm:h-12 mt-6 rounded-xl text-sm sm:text-base font-bold shadow-md transition-all hover:scale-[1.02] active:scale-95'
+                                    className='w-full h-11 sm:h-12 mt-6 rounded-xl text-sm sm:text-base font-bold shadow-md transition-transform hover:scale-[1.02] active:scale-95'
                                 >
                                     {isLoading ? (
                                         <>

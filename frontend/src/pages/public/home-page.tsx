@@ -8,13 +8,13 @@ import { HeroProductPreview } from '@/components/marketing/hero-product-preview'
 import { SEO } from '@/components/seo';
 import { useAuthStore } from '@/store/auth-store';
 
+const scrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
+};
+
 export default function HomePage() {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-    const scrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
-        e.preventDefault();
-        document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' });
-    };
 
     return (
         <div className='flex flex-col'>
