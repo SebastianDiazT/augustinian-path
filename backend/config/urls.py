@@ -13,7 +13,7 @@ urlpatterns = [
     # path(f'{api_prefix}institution/', include('apps.institution.urls', namespace='institution')),
     # path(f'{api_prefix}curricula/', include('apps.curricula.urls', namespace='curricula')),
     # path(f'{api_prefix}offerings/', include('apps.offerings.urls', namespace='offerings')),
-    # path(f'{api_prefix}accounts/', include('apps.accounts.urls', namespace='accounts')),
+    path(f'{api_prefix}accounts/', include('apps.accounts.urls', namespace='accounts')),
     # path(
     #     f'{api_prefix}academic-records/',
     #     include('apps.academic_records.urls', namespace='academic_records'),
