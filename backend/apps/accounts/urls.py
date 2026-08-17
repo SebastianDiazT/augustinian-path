@@ -7,6 +7,8 @@ from .views_management import (
     DelegateMembershipRequestListView,
     DelegateSupportTicketActionView,
     DelegateSupportTicketListView,
+    ManagementSchoolDelegationDetailView,
+    ManagementSchoolDelegationListView,
 )
 from .views_student import (
     StudentMembershipRequestView,
@@ -54,5 +56,17 @@ urlpatterns = [
         'management/support-tickets/<uuid:public_id>/action/',
         DelegateSupportTicketActionView.as_view(),
         name='management-tickets-action',
+    ),
+
+    # 4. Asignación de Roles (Exclusivo Admin)
+    path(
+        'management/delegations/',
+        ManagementSchoolDelegationListView.as_view(),
+        name='management-delegations-list',
+    ),
+    path(
+        'management/delegations/<uuid:public_id>/',
+        ManagementSchoolDelegationDetailView.as_view(),
+        name='management-delegations-detail',
     ),
 ]

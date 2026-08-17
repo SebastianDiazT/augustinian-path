@@ -4,11 +4,12 @@ from rest_framework import filters, generics, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.permissions import IsAdminOrDelegate
+from apps.core.permissions import IsAdminOrDelegate, IsPlatformAdmin
 
 from .models import MembershipRequest, SchoolDelegation, SchoolMembership, SupportTicket
 from .serializers import (
     ManagementMembershipRequestSerializer,
+    SchoolDelegationSerializer,
     SupportTicketSerializer,
 )
 
@@ -160,3 +161,38 @@ class DelegateSupportTicketActionView(APIView):
         ticket.save(update_fields=['status', 'resolved_by', 'resolved_at'])
 
         return Response({'detail': 'Ticket actualizado con éxito.'}, status=status.HTTP_200_OK)
+
+
+# =====================================================================
+# 3. ASIGNACIÓN DE DELEGADOS (Exclusivo para el Admin Global)
+# =====================================================================
+
+
+class ManagementSchoolDelegationListView(generics.ListCreateAPIView):
+    """
+    GET: Lista todos los delegados asignados en la plataforma.
+    POST: Asigna a un usuario como delegado de una escuela.
+    """
+
+    queryset = SchoolDelegation.objects.select_related(
+        'delegate', 'school', 'assigned_by'
+    ).order_by('-created_at')
+    serializer_class = SchoolDelegationSerializer
+    permission_classes = [IsPlatformAdmin]
+    filter_backends = [filters.SearchFilter]
+    search_fields = ['delegate__full_name', 'delegate__email', 'school__name']
+
+    def perform_create(self, serializer):
+        serializer.save(assigned_by=self.request.user)
+
+
+class ManagementSchoolDelegationDetailView(generics.RetrieveDestroyAPIView):
+    """
+    GET: Ve los detalles de una asignación.
+    DELETE: Revoca el poder de un delegado.
+    """
+
+    queryset = SchoolDelegation.objects.all()
+    serializer_class = SchoolDelegationSerializer
+    permission_classes = [IsPlatformAdmin]
+    lookup_field = 'public_id'

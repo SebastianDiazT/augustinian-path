@@ -3,7 +3,7 @@ from rest_framework import serializers
 from apps.curricula.models import CurriculumPlan
 from apps.institution.models import ProfessionalSchool
 
-from .models import MembershipRequest, SupportTicket, User
+from .models import MembershipRequest, SchoolDelegation, SupportTicket, User
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -142,3 +142,34 @@ class ManagementMembershipRequestSerializer(serializers.ModelSerializer):
             'status',
             'created_at',
         ]
+
+
+class SchoolDelegationSerializer(serializers.ModelSerializer):
+    delegate_id = serializers.SlugRelatedField(
+        source='delegate', slug_field='public_id', queryset=User.objects.all(), write_only=True
+    )
+    school_id = serializers.SlugRelatedField(
+        source='school',
+        slug_field='public_id',
+        queryset=ProfessionalSchool.objects.all(),
+        write_only=True,
+    )
+
+    delegate_name = serializers.CharField(source='delegate.full_name', read_only=True)
+    delegate_email = serializers.EmailField(source='delegate.email', read_only=True)
+    school_name = serializers.CharField(source='school.name', read_only=True)
+    assigned_by_name = serializers.CharField(source='assigned_by.full_name', read_only=True)
+
+    class Meta:
+        model = SchoolDelegation
+        fields = [
+            'public_id',
+            'delegate_id',
+            'school_id',
+            'delegate_name',
+            'delegate_email',
+            'school_name',
+            'assigned_by_name',
+            'created_at',
+        ]
+        read_only_fields = ['public_id', 'created_at']

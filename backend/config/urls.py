@@ -10,7 +10,7 @@ api_prefix = f'api/{settings.API_VERSION}/'
 
 urlpatterns = [
     path(api_prefix, include('apps.core.urls', namespace='core')),
-    # path(f'{api_prefix}institution/', include('apps.institution.urls', namespace='institution')),
+    path(f'{api_prefix}institution/', include('apps.institution.urls', namespace='institution')),
     # path(f'{api_prefix}curricula/', include('apps.curricula.urls', namespace='curricula')),
     # path(f'{api_prefix}offerings/', include('apps.offerings.urls', namespace='offerings')),
     path(f'{api_prefix}accounts/', include('apps.accounts.urls', namespace='accounts')),

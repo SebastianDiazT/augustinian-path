@@ -14,7 +14,6 @@ class Faculty(CatalogBaseModel):
     name = models.CharField(max_length=255, unique=True)
     acronym = models.CharField(max_length=20, unique=True, help_text='Ej. FIPS')
 
-    # Añadimos el área aquí como un campo fijo
     area = models.CharField(
         max_length=20,
         choices=AcademicArea.choices,
