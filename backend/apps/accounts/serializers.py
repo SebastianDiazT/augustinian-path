@@ -7,6 +7,9 @@ from .models import MembershipRequest, SchoolDelegation, SupportTicket, User
 
 
 class UserSerializer(serializers.ModelSerializer):
+    school_memberships = serializers.SerializerMethodField()
+    delegations = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -16,8 +19,33 @@ class UserSerializer(serializers.ModelSerializer):
             'picture_url',
             'cui',
             'is_platform_admin',
+            'school_memberships',
+            'delegations',
         ]
         read_only_fields = fields
+
+    def get_school_memberships(self, obj):
+        memberships = obj.memberships.filter(is_active=True)
+        return [
+            {
+                'public_id': m.public_id,
+                'school_id': m.school.public_id,
+                'school_name': m.school.name,
+                'plan_id': m.curriculum_plan.public_id,
+            }
+            for m in memberships
+        ]
+
+    def get_delegations(self, obj):
+        delegations = obj.delegations.filter(is_active=True)
+        return [
+            {
+                'public_id': d.public_id,
+                'school_id': d.school.public_id,
+                'school_name': d.school.name,
+            }
+            for d in delegations
+        ]
 
 
 class StudentOnboardingSerializer(serializers.ModelSerializer):
