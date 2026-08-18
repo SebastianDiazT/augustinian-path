@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
@@ -48,8 +48,17 @@ export function useOnboardingSchool() {
 
     const { setUser } = useAuthStore();
 
-    const fetchInitialData = async () => {
+    const fetchInitialData = useCallback(async () => {
         try {
+            const userRes = await api.get('/accounts/student/me/');
+            const updatedUser = userRes.data;
+
+            setUser(updatedUser);
+
+            if (updatedUser.school_memberships && updatedUser.school_memberships.length > 0) {
+                return;
+            }
+
             const reqsRes = await api.get('/accounts/student/membership-requests/');
             const requests: MembershipRequestData[] = reqsRes.data;
             const isPending = requests.some((req) => req.status === 'pending');
@@ -68,7 +77,7 @@ export function useOnboardingSchool() {
         } catch {
             toast.error('Hubo un problema al conectar con el servidor.');
         }
-    };
+    }, [setUser]);
 
     useEffect(() => {
         let mounted = true;
@@ -80,7 +89,7 @@ export function useOnboardingSchool() {
         return () => {
             mounted = false;
         };
-    }, []);
+    }, [fetchInitialData]);
 
     const handleManualRefresh = async () => {
         setIsPageLoading(true);
