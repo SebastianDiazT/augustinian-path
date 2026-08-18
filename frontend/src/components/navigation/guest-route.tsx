@@ -1,11 +1,23 @@
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '@/store/auth-store';
-import { privatePaths } from '@/app/paths';
+import { authPaths, privatePaths } from '@/app/paths';
 
 export function GuestRoute() {
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const { user } = useAuthStore();
+    const hasSession = Boolean(user);
 
-    if (isAuthenticated) {
+    if (hasSession && user) {
+        const hasCui = Boolean(user.cui);
+        const hasMemberships = user.school_memberships && user.school_memberships.length > 0;
+
+        if (!hasCui) {
+            return <Navigate to={authPaths.onboardingCui} replace />;
+        }
+
+        if (hasCui && !hasMemberships) {
+            return <Navigate to={authPaths.onboardingSchool} replace />;
+        }
+
         return <Navigate to={privatePaths.dashboard} replace />;
     }
 

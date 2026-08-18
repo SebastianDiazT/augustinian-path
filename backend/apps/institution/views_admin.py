@@ -13,7 +13,7 @@ class AdminFacultyListCreateView(generics.ListCreateAPIView):
     serializer_class = FacultySerializer
     permission_classes = [IsPlatformAdmin]
     filter_backends = [filters.SearchFilter]
-    search_fields = ['name', 'acronym', 'academic_area']
+    search_fields = ['name', 'acronym', 'area']
 
 
 class AdminFacultyDetailView(generics.RetrieveUpdateDestroyAPIView):

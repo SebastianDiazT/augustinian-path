@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowRight, CalendarDays, Network, Sparkles, BookOpenCheck, LogIn } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { publicPaths, privatePaths } from '@/app/paths';
+import { authPaths, privatePaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { FeatureCard } from '@/components/marketing/feature-card';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,22 @@ const scrollToFeatures = (e: React.MouseEvent<HTMLAnchorElement>) => {
 };
 
 export default function HomePage() {
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const { user } = useAuthStore();
+    const hasSession = Boolean(user);
+
+    let ctaPath = authPaths.login;
+    if (hasSession && user) {
+        const hasCui = Boolean(user.cui);
+        const hasMemberships = user.school_memberships && user.school_memberships.length > 0;
+
+        if (!hasCui) {
+            ctaPath = authPaths.onboardingCui;
+        } else if (!hasMemberships) {
+            ctaPath = authPaths.onboardingSchool;
+        } else {
+            ctaPath = privatePaths.dashboard;
+        }
+    }
 
     return (
         <div className='flex flex-col'>
@@ -46,15 +61,18 @@ export default function HomePage() {
                         </p>
 
                         <div className='mt-8 flex flex-col gap-3 sm:flex-row sm:items-center'>
-                            <Link to={isAuthenticated ? privatePaths.dashboard : publicPaths.login} className='w-full sm:w-auto'>
+                            <Link
+                                to={ctaPath}
+                                className='w-full sm:w-auto'
+                            >
                                 <Button
                                     size='lg'
                                     className='w-full h-12 rounded-xl px-6 text-sm font-extrabold shadow-md transition-transform hover:scale-[1.02] active:scale-95'
                                 >
-                                    {isAuthenticated
+                                    {hasSession
                                         ? ES_UI.marketing.heroCtaAuth
                                         : ES_UI.marketing.heroCta}
-                                    {isAuthenticated ? (
+                                    {hasSession ? (
                                         <ArrowRight className='ml-2 size-4' aria-hidden='true' />
                                     ) : (
                                         <LogIn className='ml-2 size-4' aria-hidden='true' />
@@ -139,15 +157,15 @@ export default function HomePage() {
                         {ES_UI.marketing.bottomCta.description}
                     </p>
                     <div className='mt-10 flex justify-center'>
-                        <Link to={isAuthenticated ? privatePaths.dashboard : publicPaths.login}>
+                        <Link to={ctaPath}>
                             <Button
                                 size='lg'
                                 className='h-14 rounded-2xl px-10 text-base font-bold shadow-lg transition-transform hover:scale-[1.03] active:scale-95'
                             >
-                                {isAuthenticated
+                                {hasSession
                                     ? ES_UI.marketing.bottomCta.buttonAuth
                                     : ES_UI.marketing.bottomCta.button}
-                                {isAuthenticated ? (
+                                {hasSession ? (
                                     <ArrowRight
                                         className='ml-2 size-4 shrink-0 transition-transform hover:translate-x-1'
                                         aria-hidden='true'

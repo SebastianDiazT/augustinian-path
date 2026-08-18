@@ -13,11 +13,12 @@ const PrivacyPage = lazy(() => import('@/pages/public/privacy-page'));
 const TermsPage = lazy(() => import('@/pages/public/terms-page'));
 const SupportPage = lazy(() => import('@/pages/public/support-page'));
 
-const StudentLayout = lazy(() => import("@/app/layouts/student-layout"));
+const StudentLayout = lazy(() => import('@/app/layouts/student-layout'));
+
+const DashboardPage = lazy(() => import('@/pages/private/student/dashboard-page'));
 
 const NotFoundPage = lazy(() => import('@/pages/error/not-found-page'));
 const ForbiddenPage = lazy(() => import('@/pages/error/forbidden-page'));
-
 
 export function AppRouter() {
     return (
@@ -39,6 +40,7 @@ export function AppRouter() {
                     <Route path='/onboarding/school' element={<OnboardingSchoolPage />} />
 
                     <Route element={<StudentLayout />}>
+                        <Route path='/student/dashboard' element={<DashboardPage />} />
                     </Route>
                 </Route>
 

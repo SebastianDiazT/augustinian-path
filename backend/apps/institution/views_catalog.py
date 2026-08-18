@@ -19,9 +19,9 @@ class FacultyCatalogListView(generics.ListAPIView):
 
     def get_queryset(self):
         qs = Faculty.objects.filter(is_active=True).order_by('name')
-        area = self.request.query_params.get('academic_area')
+        area = self.request.query_params.get('area')
         if area:
-            qs = qs.filter(academic_area=area)
+            qs = qs.filter(area=area)
         return qs
 
 

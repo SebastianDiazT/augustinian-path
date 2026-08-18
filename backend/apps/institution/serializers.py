@@ -6,7 +6,7 @@ from .models import Faculty, ProfessionalSchool
 class FacultySerializer(serializers.ModelSerializer):
     class Meta:
         model = Faculty
-        fields = ['public_id', 'name', 'acronym', 'academic_area', 'is_active', 'created_at']
+        fields = ['public_id', 'name', 'acronym', 'area', 'is_active', 'created_at']
         read_only_fields = ['public_id', 'created_at']
 
 

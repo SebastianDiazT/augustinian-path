@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { LogIn, ArrowRight } from 'lucide-react';
-import { publicPaths, privatePaths } from '@/app/paths';
+import { publicPaths, privatePaths, authPaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { ThemeMenu } from '@/theme/theme-menu';
@@ -8,7 +8,18 @@ import { Button } from '@/components/ui/button';
 import { useAuthStore } from '@/store/auth-store';
 
 export function PublicHeader() {
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const { user } = useAuthStore();
+    const hasSession = Boolean(user);
+
+    let ctaPath = authPaths.login;
+    if (hasSession && user) {
+        const hasCui = Boolean(user.cui);
+        const hasMemberships = user.school_memberships && user.school_memberships.length > 0;
+
+        if (!hasCui) ctaPath = authPaths.onboardingCui;
+        else if (!hasMemberships) ctaPath = authPaths.onboardingSchool;
+        else ctaPath = privatePaths.dashboard;
+    }
 
     return (
         <header className='sticky top-0 z-50 w-full border-b border-border bg-background/90 backdrop-blur-xl supports-backdrop-filter:bg-background/60'>
@@ -24,23 +35,20 @@ export function PublicHeader() {
                 <div className='flex shrink-0 items-center gap-2 sm:gap-4'>
                     <ThemeMenu />
 
-                    <Link
-                        to={isAuthenticated ? privatePaths.dashboard : publicPaths.login}
-                        tabIndex={-1}
-                    >
+                    <Link to={ctaPath} tabIndex={-1}>
                         <Button className='group relative h-9 overflow-hidden rounded-xl bg-primary px-4 font-bold text-primary-foreground shadow-[0_1px_4px_rgba(0,0,0,0.16)] transition-transform duration-300 hover:scale-[1.02] hover:bg-primary/95 hover:shadow-[0_4px_12px_rgba(128,0,32,0.25)] active:scale-95 sm:h-10 sm:px-5 dark:hover:shadow-[0_4px_12px_rgba(248,113,113,0.25)]'>
                             <span className='hidden sm:inline'>
-                                {isAuthenticated
+                                {hasSession
                                     ? ES_UI.navigation.goToDashboard
                                     : ES_UI.navigation.login}
                             </span>
                             <span className='sm:hidden'>
-                                {isAuthenticated
+                                {hasSession
                                     ? ES_UI.navigation.goToDashboardMobile
                                     : ES_UI.navigation.loginMobile}
                             </span>
 
-                            {isAuthenticated ? (
+                            {hasSession ? (
                                 <ArrowRight
                                     className='ml-2 size-4 shrink-0 transition-transform duration-300 group-hover:translate-x-0.5'
                                     aria-hidden='true'

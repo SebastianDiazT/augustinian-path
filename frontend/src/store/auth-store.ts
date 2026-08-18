@@ -31,7 +31,7 @@ export const useAuthStore = create<AuthState>()(
 
             syncProfile: async () => {
                 try {
-                    const res = await api.get('/accounts/users/me/');
+                    const res = await api.get('/accounts/student/me/');
                     set({ user: res.data });
                 } catch (error: unknown) {
                     console.error('Error al sincronizar el perfil:', error);

@@ -1,4 +1,4 @@
-import { IdCard, ArrowRight, AlertCircle, Loader2, Info } from 'lucide-react';
+import { IdCard, ArrowRight, Loader2, Info } from 'lucide-react';
 import { SEO } from '@/components/seo';
 import { BrandLogo } from '@/components/brand/brand-logo';
 import { Button } from '@/components/ui/button';
@@ -85,13 +85,6 @@ export default function OnboardingCuiPage() {
                                     />
                                 ))}
                             </div>
-
-                            {error && (
-                                <div className='mt-4 flex items-start justify-center gap-2 text-xs sm:text-sm font-medium text-destructive animate-reveal-soft'>
-                                    <AlertCircle className='mt-0.5 size-3.5 sm:size-4 shrink-0' />
-                                    <p>{error}</p>
-                                </div>
-                            )}
                         </div>
 
                         <div className='flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-600 dark:text-amber-500 animate-reveal-soft'>

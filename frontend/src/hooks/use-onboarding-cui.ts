@@ -1,19 +1,16 @@
 import { useState, useRef, type ClipboardEvent, type KeyboardEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
-import { privatePaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { useAuthStore } from '@/store/auth-store';
 
 export function useOnboardingCui() {
-    const navigate = useNavigate();
     const { user, setUser } = useAuthStore();
 
     const [digits, setDigits] = useState<string[]>(() => Array(8).fill(''));
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [hasError, setHasError] = useState<boolean>(false);
 
     const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
@@ -26,7 +23,7 @@ export function useOnboardingCui() {
         const newDigits = [...digits];
         newDigits[index] = value.slice(-1);
         setDigits(newDigits);
-        setError(null);
+        setHasError(false);
 
         if (value && index < 7) {
             inputRefs.current[index + 1]?.focus();
@@ -41,7 +38,7 @@ export function useOnboardingCui() {
                 const newDigits = [...digits];
                 newDigits[index] = '';
                 setDigits(newDigits);
-                setError(null);
+                setHasError(false);
             }
         } else if (e.key === 'ArrowLeft' && index > 0) {
             inputRefs.current[index - 1]?.focus();
@@ -60,7 +57,7 @@ export function useOnboardingCui() {
                 newDigits[i] = pastedData[i];
             }
             setDigits(newDigits);
-            setError(null);
+            setHasError(false);
 
             const focusIndex = pastedData.length < 8 ? pastedData.length : 7;
             inputRefs.current[focusIndex]?.focus();
@@ -69,12 +66,13 @@ export function useOnboardingCui() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError(null);
+        setHasError(false);
 
         const cleanCui = digits.join('');
 
         if (cleanCui.length !== 8) {
-            setError(dict.errors.length);
+            toast.error(dict.errors.length);
+            setHasError(true);
             return;
         }
 
@@ -88,24 +86,24 @@ export function useOnboardingCui() {
             }
 
             toast.success('CUI registrado correctamente.');
-            navigate(privatePaths.onboardingSchool);
         } catch (err: unknown) {
             console.error('Error al registrar CUI:', err);
+            setHasError(true);
 
             if (axios.isAxiosError(err)) {
                 if (err.response?.status === 409) {
-                    setError(dict.errors.conflict);
+                    toast.error(dict.errors.conflict);
                 } else if (err.response?.status === 400) {
-                    setError(
+                    const errorMsg =
                         err.response.data.detail ||
-                            err.response.data.cui?.[0] ||
-                            dict.errors.default,
-                    );
+                        err.response.data.cui?.[0] ||
+                        dict.errors.default;
+                    toast.error(errorMsg);
                 } else {
-                    setError(dict.errors.default);
+                    toast.error(dict.errors.default);
                 }
             } else {
-                setError(dict.errors.default);
+                toast.error(dict.errors.default);
             }
         } finally {
             setIsLoading(false);
@@ -119,7 +117,7 @@ export function useOnboardingCui() {
         firstName,
         digits,
         isLoading,
-        error,
+        error: hasError,
         inputRefs,
         isComplete,
         handleChange,

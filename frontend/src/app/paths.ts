@@ -1,14 +1,16 @@
 export const publicPaths = {
     home: '/',
-    login: '/login',
     privacy: '/privacy',
     terms: '/terms',
     support: '/support',
 } as const;
 
-export const privatePaths = {
-    dashboard: '/student/dashboard',
-
+export const authPaths = {
+    login: '/login',
     onboardingCui: '/onboarding/cui',
     onboardingSchool: '/onboarding/school',
+}
+
+export const privatePaths = {
+    dashboard: '/student/dashboard',
 };

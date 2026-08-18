@@ -1,4 +1,4 @@
-import { GraduationCap, ArrowRight, AlertCircle, Loader2, Clock, Info } from 'lucide-react';
+import { GraduationCap, ArrowRight, Loader2, Clock, Info } from 'lucide-react';
 import { ES_UI } from '@/locales/es';
 import { SEO } from '@/components/seo';
 import { BrandLogo } from '@/components/brand/brand-logo';
@@ -24,7 +24,6 @@ export default function OnboardingSchoolPage() {
         isLoading,
         isPageLoading,
         hasPendingRequest,
-        error,
         handleAreaChange,
         handleFacultyChange,
         handleSchoolChange,
@@ -168,13 +167,6 @@ export default function OnboardingSchoolPage() {
                                         }
                                     />
                                 </div>
-
-                                {error && (
-                                    <div className='flex items-start gap-2 text-xs sm:text-sm font-medium text-destructive animate-reveal-soft'>
-                                        <AlertCircle className='mt-0.5 size-3.5 sm:size-4 shrink-0' />
-                                        <p>{error}</p>
-                                    </div>
-                                )}
 
                                 <div className='mt-2 flex items-start gap-3 rounded-xl border border-amber-500/20 bg-amber-500/10 p-4 text-sm text-amber-600 dark:text-amber-500 animate-reveal-soft'>
                                     <Info className='mt-0.5 size-4 shrink-0' />

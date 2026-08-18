@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ShieldCheck, Info } from 'lucide-react';
-import { publicPaths } from '@/app/paths';
+import { publicPaths, authPaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { BrandLogo } from '@/components/brand/brand-logo';
 
@@ -62,7 +62,7 @@ export function PublicFooter() {
                                     </Link>
                                 </li>
                                 <li>
-                                    <Link to={publicPaths.login} className={linkClass}>
+                                    <Link to={authPaths.login} className={linkClass}>
                                         {ES_UI.navigation.login}
                                     </Link>
                                 </li>

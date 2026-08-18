@@ -45,7 +45,6 @@ export function useOnboardingSchool() {
     const [isLoading, setIsLoading] = useState(false);
     const [isPageLoading, setIsPageLoading] = useState(true);
     const [hasPendingRequest, setHasPendingRequest] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const { setUser } = useAuthStore();
 
@@ -86,7 +85,7 @@ export function useOnboardingSchool() {
     const handleManualRefresh = async () => {
         setIsPageLoading(true);
         try {
-            const userRes = await api.get('/accounts/users/me/');
+            const userRes = await api.get('/accounts/student/me/');
             const updatedUser = userRes.data;
             const isApproved =
                 updatedUser.school_memberships && updatedUser.school_memberships.length > 0;
@@ -133,9 +132,8 @@ export function useOnboardingSchool() {
     };
 
     const submitRequest = async () => {
-        setError(null);
         if (!selectedSchool || !selectedPlan) {
-            setError('Debes seleccionar una escuela y un plan de estudios.');
+            toast.error('Debes seleccionar una escuela y un plan de estudios.');
             return false;
         }
 
@@ -151,9 +149,9 @@ export function useOnboardingSchool() {
             return true;
         } catch (err: unknown) {
             if (axios.isAxiosError(err)) {
-                setError(err.response?.data?.detail || 'Error al enviar la solicitud.');
+                toast.error(err.response?.data?.detail || 'Error al enviar la solicitud.');
             } else {
-                setError('Ocurrió un error inesperado.');
+                toast.error('Ocurrió un error inesperado.');
             }
             return false;
         } finally {
@@ -177,7 +175,6 @@ export function useOnboardingSchool() {
         isLoading,
         isPageLoading,
         hasPendingRequest,
-        error,
         handleAreaChange,
         handleFacultyChange,
         handleSchoolChange,

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ShieldAlert, LogIn } from 'lucide-react';
-import { publicPaths } from '@/app/paths';
+import { authPaths } from '@/app/paths';
 import { ES_UI } from '@/locales/es';
 import { Button } from '@/components/ui/button';
 import { SEO } from '@/components/seo';
@@ -30,7 +30,7 @@ export default function ForbiddenPage() {
                 </p>
             </div>
 
-            <Link to={publicPaths.login} className='mt-10'>
+            <Link to={authPaths.login} className='mt-10'>
                 <Button
                     size='lg'
                     className='h-12 rounded-xl px-8 font-bold shadow-sm transition-transform hover:scale-[1.02] active:scale-95'

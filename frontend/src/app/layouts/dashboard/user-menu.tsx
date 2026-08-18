@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronDown, CircleHelp, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-import { publicPaths } from '@/app/paths';
+import { publicPaths, authPaths } from '@/app/paths';
 import { useAuthStore } from '@/store/auth-store';
 import type { DashboardPanel } from './dashboard.types';
 
@@ -38,7 +38,7 @@ export function UserMenu({ activePanel }: UserMenuProps) {
 
     const handleLogout = () => {
         clearAuth();
-        navigate(publicPaths.home);
+        navigate(authPaths.login, { replace: true });
     };
 
     return (
