@@ -1,3 +1,3 @@
 export const projectConfig = {
-    supportEmail: 'soporte@ruta-agustina.com',
+    supportEmail: 'aviviano@unsa.edu.pe',
 };
